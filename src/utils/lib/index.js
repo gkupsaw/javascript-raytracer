@@ -18,7 +18,34 @@ import {
     cos,
     tan,
     atan,
+    Matrix,
 } from 'mathjs';
+
+Matrix.prototype.x = function () {
+    return subset(this, index(0));
+};
+Matrix.prototype.y = function () {
+    return subset(this, index(1));
+};
+Matrix.prototype.z = function () {
+    return subset(this, index(2));
+};
+Matrix.prototype.w = function () {
+    return subset(this, index(3));
+};
+
+Matrix.prototype.r = function () {
+    return subset(this, index(0));
+};
+Matrix.prototype.g = function () {
+    return subset(this, index(1));
+};
+Matrix.prototype.b = function () {
+    return subset(this, index(2));
+};
+Matrix.prototype.a = function () {
+    return subset(this, index(3));
+};
 
 const normalize = (vec) => mat_mul(vec, 1 / sum(vec));
 // const dot = () => console.error('No dot!');

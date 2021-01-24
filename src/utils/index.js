@@ -1,6 +1,7 @@
 import { id4 } from './lib';
 import { parse } from './parser/scene-parser';
 import { RayScene } from './raytracing/RayScene';
+import Camera from './raytracing/Camera';
 
 const scene = `<scenefile>
 <globaldata>
@@ -32,15 +33,12 @@ const scene = `<scenefile>
 
 </scenefile>`;
 
-const CAMERA = {
-    getScaleMatrix: () => id4(),
-    getViewMatrix: () => id4(),
-};
+const CAMERA = new Camera();
 
 const CANVAS = {
     data: () => ({}),
-    height: () => 10,
-    width: () => 10,
+    height: () => 50,
+    width: () => 50,
     update: () => {},
 };
 

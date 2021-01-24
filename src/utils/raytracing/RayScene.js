@@ -100,6 +100,7 @@ class RayScene {
             if (pixelIntersection.t === Infinity) {
                 data[xMax * y + x] = bgColor;
             } else {
+                console.log('intersect!');
                 const wscIntersectionPoint = mat_add(
                     ray.eye,
                     mat_mul(ray.dir, pixelIntersection.t)
@@ -136,6 +137,7 @@ class RayScene {
                 mat_mul(objectToWorld, ray.eye),
                 mat_mul(objectToWorld, ray.dir)
             );
+            console.log(rayOS);
 
             switch (shape.primitive.type) {
                 case primitiveTypes.CONE:
@@ -159,7 +161,6 @@ class RayScene {
                 closestIntersection.shape = shape;
             }
         }
-        console.log(closestIntersection.t);
 
         return closestIntersection;
     };
@@ -182,7 +183,7 @@ class RayScene {
         let diffuseIntensity = mat_mul(this.global.kd, mat.cDiffuse);
         const specularIntensity = mat_mul(this.global.ks, mat.cSpecular);
         const recursiveIntensity = mat_mul(this.global.ks, mat.cReflective);
-        const V = normalize(-wscRayDir); // normalized wsc line of sight
+        const V = normalize(negate(wscRayDir)); // normalized wsc line of sight
         const shininess = mat.shininess;
 
         let lightSummation = vec4(0);
@@ -191,7 +192,6 @@ class RayScene {
             mat3(shape.inverseTransformation)
         );
         const N = normalize(
-            //fixxyz
             vec4(mat_mul(objectNormalToWorld, xyz(oscIntersection.normal)), 0)
         );
 

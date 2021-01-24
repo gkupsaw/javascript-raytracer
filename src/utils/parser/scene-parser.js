@@ -1,7 +1,6 @@
 import {
     vec3,
     vec4,
-    zero_mat4,
     RGBA,
     GlobalData,
     LightData,
@@ -13,6 +12,7 @@ import {
     translate,
     scale,
     rotate,
+    id4,
 } from '../lib';
 import {
     defaultData,
@@ -131,7 +131,7 @@ const parseLight = (light) => {
     return lightData;
 };
 
-const parseObject = (object, transformation = zero_mat4()) => {
+const parseObject = (object, transformation = id4()) => {
     const name = object.getAttribute('name');
     const type = object.getAttribute('type');
     let objects = [];

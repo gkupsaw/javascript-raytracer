@@ -1,5 +1,6 @@
 import {
     dot,
+    cross,
     det,
     inv,
     transpose as mat_transpose,
@@ -13,7 +14,18 @@ import {
     identity,
     zeros,
     chain,
+    sin,
+    cos,
+    tan,
+    atan,
+    Matrix,
 } from 'mathjs';
+
+Matrix.x = function () {
+    'hi';
+};
+
+matrix().x();
 
 const normalize = (vec) => mat_mul(vec, 1 / sum(vec));
 // const dot = () => console.error('No dot!');
@@ -34,13 +46,15 @@ const rotate = (M, x, a) => {
 };
 const mat_inv = (M) => {
     if (det(M) === 0) {
-        return M;
+        return id4();
     } else {
         return inv(M);
     }
 };
 const negate = (M) => mat_mul(M, -1);
 const xyz = (vec) => subset(vec, index(range(0, 3)));
+const radians = (deg) => (deg * Math.PI) / 180;
+const degrees = (rad) => (180 * rad) / Math.PI;
 
 const proxifyVec = (vec) =>
     new Proxy(vec, {
@@ -178,7 +192,6 @@ class old_vec4 extends old_vec3 {
 
     xyz = () => new vec3(this.x, this.y, this.z);
 }
-
 class old_mat3 {
     constructor(row1, row2, row3) {
         if (Array.isArray(row1)) {
@@ -200,24 +213,60 @@ class old_mat3 {
     }
 }
 
-const mat3 = matrix;
-const vec3 = (x, y, z) => {
-    if (y === undefined && z === undefined) {
-        return matrix([x, x, x]);
+const mat3 = (row1, row2, row3) => {
+    if (row1 && row2 === undefined && row3 === undefined) {
+        const mat4ToShrink = row1;
+        mat4ToShrink.resize([3, 3]);
+        return mat4ToShrink;
     }
-    return matrix([x, y, z]);
+    return matrix([row1, row2, row3]);
 };
+
+const mat4x4 = (row1, row2, row3, row4) => matrix([row1, row2, row3, row4]);
+
+const vec3 = (x, y, z) => {
+    let vec;
+
+    if (y === undefined && z === undefined) {
+        vec = matrix([x, x, x]);
+        vec.x = x; // this is really bad, fix it later
+        vec.y = x;
+        vec.z = x;
+    } else {
+        vec = matrix([x, y, z]);
+        vec.x = x;
+        vec.y = y;
+        vec.z = z;
+    }
+
+    return vec;
+};
+
 const vec4 = (x, y, z, w) => {
+    let vec;
+
     if (y === undefined && z === undefined && w === undefined) {
-        return matrix([x, x, x, x]);
+        vec = matrix([x, x, x, x]);
+        vec.x = x;
+        vec.y = x;
+        vec.z = x;
+        vec.w = x;
     } else if (z === undefined && w === undefined) {
         x.resize([4], y);
-        return x;
+        vec = x;
+    } else {
+        vec = matrix([x, y, z, w]);
+        vec.x = x;
+        vec.y = y;
+        vec.z = z;
+        vec.w = w;
     }
-    return matrix([x, y, z, w]);
+
+    return vec;
 };
 
 const zero_mat4 = () => zeros(4, 4);
+
 const id4 = () => identity(4);
 
 class RGBA {
@@ -334,6 +383,7 @@ export {
     vec3,
     vec4,
     mat3,
+    mat4x4,
     zero_mat4,
     id4,
     matrix,
@@ -352,6 +402,7 @@ export {
     clamp,
     normalize,
     dot,
+    cross,
     mat_inv,
     mat_transpose,
     mat_mul,
@@ -362,5 +413,11 @@ export {
     scale,
     rotate,
     chain,
+    sin,
+    cos,
+    tan,
+    atan,
+    radians,
+    degrees,
     unused,
 };

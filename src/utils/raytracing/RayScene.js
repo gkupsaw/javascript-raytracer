@@ -88,7 +88,6 @@ class RayScene {
             const worldSpaceLoc = mat_mul(filmToWorld, filmPlaneLoc);
             const dir = normalize(mat_add(worldSpaceLoc, negate(pEye)));
             const ray = new Ray(pEye, dir);
-            console.log(dir);
 
             // calculate intersection of this ray for every shape in this.shapes
             // find closest intersection
@@ -127,7 +126,8 @@ class RayScene {
     };
 
     computeIntersection = (ray) => {
-        let closestIntersection, currIntersection;
+        let closestIntersection = new IntersectionData(),
+            currIntersection;
 
         for (const shape of this.shapes) {
             const objectToWorld = shape.inverseTransformation;
@@ -148,7 +148,6 @@ class RayScene {
                     currIntersection = ImplicitShapes.implicitCube(rayOS);
                     break;
                 case primitiveTypes.SPHERE:
-                    console.log('hit sphere');
                     currIntersection = ImplicitShapes.implicitSphere(rayOS);
                     break;
                 default:
@@ -160,6 +159,7 @@ class RayScene {
                 closestIntersection.shape = shape;
             }
         }
+        console.log(closestIntersection.t);
 
         return closestIntersection;
     };

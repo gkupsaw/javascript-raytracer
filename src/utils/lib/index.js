@@ -8,6 +8,7 @@ import {
     sum,
     matrix,
     index,
+    range,
     subset,
     identity,
     zeros,
@@ -39,7 +40,7 @@ const mat_inv = (M) => {
     }
 };
 const negate = (M) => mat_mul(M, -1);
-const xyz = (vec) => subset(vec, index([0, 2]));
+const xyz = (vec) => subset(vec, index(range(0, 3)));
 
 const proxifyVec = (vec) =>
     new Proxy(vec, {
@@ -209,6 +210,9 @@ const vec3 = (x, y, z) => {
 const vec4 = (x, y, z, w) => {
     if (y === undefined && z === undefined && w === undefined) {
         return matrix([x, x, x, x]);
+    } else if (z === undefined && w === undefined) {
+        x.resize([4], y);
+        return x;
     }
     return matrix([x, y, z, w]);
 };

@@ -38,7 +38,7 @@ const CAMERA = {
 };
 
 const CANVAS = {
-    data: () => {},
+    data: () => ({}),
     height: () => 10,
     width: () => 10,
     update: () => {},

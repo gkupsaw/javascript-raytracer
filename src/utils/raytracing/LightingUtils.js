@@ -2,7 +2,7 @@ import { lightTypes, clamp, dot, normalize } from '../lib';
 
 const reflectRay = (v, n) => {
     const dotted = clamp(dot(n, v), 0, 1);
-    return 2 * n * dotted - v;
+    return n.multiply(2 * dotted).add(v.negate());
 };
 
 const computeAttenuation = (p_f, p_i, light) => {
@@ -22,14 +22,14 @@ const computeAttenuation = (p_f, p_i, light) => {
 
 const computeDiffuse = (intensity, N, L) => {
     const dotted = clamp(dot(N, L), 0, 1);
-    return intensity * dotted;
+    return intensity.multiply(dotted);
 };
 
 const computeSpecular = (intensity, N, L, V, shininess) => {
     // does the dot product need to be clamped?
     const R = normalize(reflectRay(L, N));
     const dotted = clamp(dot(R, V), 0, 1);
-    return intensity * Math.pow(dotted, shininess);
+    return intensity.multiply(Math.pow(dotted, shininess));
 };
 
 export { reflectRay, computeAttenuation, computeDiffuse, computeSpecular };

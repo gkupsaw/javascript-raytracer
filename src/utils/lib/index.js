@@ -66,6 +66,10 @@ class vec3 {
         }
     }
 
+    negate = () => {
+        return new vec3(-this.x, -this.y, -this.z);
+    };
+
     add = (vec) => {
         if (vec.dim === 3) {
             return new vec3(this.x + vec.x, this.y + vec.y, this.z + vec.z);
@@ -112,6 +116,10 @@ class vec4 extends vec3 {
             this.w = x;
         }
     }
+
+    negate = () => {
+        return new vec4(-this.x, -this.y, -this.z, -this.w);
+    };
 
     multiply = (vec) => {
         if (vec.dim === 4) {

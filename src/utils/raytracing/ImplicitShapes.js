@@ -1,4 +1,13 @@
-import { vec4, dot, normalize, IntersectionData, Ray } from '../lib';
+import {
+    vec4,
+    dot,
+    normalize,
+    IntersectionData,
+    Ray,
+    mat_mul,
+    mat_add,
+    negate,
+} from '../lib';
 
 const EPSILON_RAY = 1e-5;
 
@@ -14,7 +23,7 @@ const implicitTrunk = (ray, a, b, c, top, bottom) => {
 
         const t1 = (-b + sqrtDiscr) / denom;
         if (t1 >= 0) {
-            const intersectPoint1 = p.add(d.mulitply(t1));
+            const intersectPoint1 = mat_add(p, mat_mul(d, t1));
             if (
                 intersectPoint1.y >= bottom - EPSILON_RAY &&
                 intersectPoint1.y <= top + EPSILON_RAY
@@ -25,7 +34,7 @@ const implicitTrunk = (ray, a, b, c, top, bottom) => {
 
         const t2 = (-b - sqrtDiscr) / denom;
         if (t2 >= 0 && t2 < minT) {
-            const intersectPoint2 = p.add(d.mulitply(t2));
+            const intersectPoint2 = mat_add(p, mat_mul(d, t2));
             if (intersectPoint2.y >= bottom && intersectPoint2.y <= top) {
                 minT = t2;
             }
@@ -40,7 +49,8 @@ const implicitPlane = (ray, planeNormal) => {
     if (Math.abs(denom) <= EPSILON_RAY) {
         return Infinity;
     }
-    const t = dot(planeNormal.dir, planeNormal.eye - ray.eye) / denom;
+    const t =
+        dot(planeNormal.dir, mat_add(planeNormal.eye, negate(ray.eye))) / denom;
     return t >= EPSILON_RAY ? t : Infinity;
 };
 
@@ -64,9 +74,9 @@ const implicitCone = (ray) => {
         Math.pow(top / m, 2);
 
     const trunkT = implicitTrunk(ray, a, b, c);
-    const intersectionPoint1 = p.add(d.mulitply(trunkT));
+    const intersectionPoint1 = mat_add(p, mat_mul(d, trunkT));
     const normalAtIntersection = normalize(
-        new vec4(
+        vec4(
             2 * intersectionPoint1.x,
             (0.5 - intersectionPoint1.y) / 2,
             2 * intersectionPoint1.z,
@@ -75,13 +85,10 @@ const implicitCone = (ray) => {
     );
     intersection = new IntersectionData(normalAtIntersection, trunkT);
 
-    const bottomCapNormal = new Ray(
-        new vec4(0, bottom, 0, 1),
-        new vec4(0, -1, 0, 0)
-    );
+    const bottomCapNormal = new Ray(vec4(0, bottom, 0, 1), vec4(0, -1, 0, 0));
     const t3 = implicitPlane(ray, bottomCapNormal);
     if (t3 < intersection.t) {
-        const intersectionPoint2 = p.add(d.mulitply(t3));
+        const intersectionPoint2 = mat_add(p, mat_mul(d, t3));
         if (
             Math.pow(intersectionPoint2.x, 2) +
                 Math.pow(intersectionPoint2.z, 2) <=
@@ -108,20 +115,17 @@ const implicitCylinder = (ray) => {
     const c = Math.pow(p.x, 2) + Math.pow(p.z, 2) - Math.pow(r, 2);
 
     const trunkT = implicitTrunk(ray, a, b, c);
-    const intersectionPoint1 = p.add(d.mulitply(trunkT));
+    const intersectionPoint1 = mat_add(p, mat_mul(d, trunkT));
     const intersectionNormal = normalize(
-        new vec4(intersectionPoint1.x * 2, 0, intersectionPoint1.z * 2, 0)
+        vec4(intersectionPoint1.x * 2, 0, intersectionPoint1.z * 2, 0)
     );
 
     intersection = new IntersectionData(intersectionNormal, trunkT);
 
-    const bottomCapNormal = new Ray(
-        new vec4(0, bottom, 0, 1),
-        new vec4(0, -1, 0, 0)
-    );
+    const bottomCapNormal = new Ray(vec4(0, bottom, 0, 1), vec4(0, -1, 0, 0));
     const t3 = implicitPlane(ray, bottomCapNormal);
     if (t3 < intersection.t) {
-        const intersectionPoint2 = p.add(d.mulitply(t3));
+        const intersectionPoint2 = mat_add(p, mat_mul(d, t3));
         if (
             Math.pow(intersectionPoint2.x, 2) +
                 Math.pow(intersectionPoint2.z, 2) <=
@@ -131,10 +135,10 @@ const implicitCylinder = (ray) => {
         }
     }
 
-    const topCapNormal = new Ray(new vec4(0, top, 0, 1), new vec4(0, 1, 0, 0));
+    const topCapNormal = new Ray(vec4(0, top, 0, 1), vec4(0, 1, 0, 0));
     const t4 = implicitPlane(ray, topCapNormal);
     if (t4 < intersection.t) {
-        const intersectionPoint3 = p.add(d.mulitply(t4));
+        const intersectionPoint3 = mat_add(p, mat_mul(d, t4));
         if (
             Math.pow(intersectionPoint3.x, 2) +
                 Math.pow(intersectionPoint3.z, 2) <=
@@ -154,21 +158,22 @@ const implicitCube = (ray) => {
     const d = ray.dir;
 
     const normals = [
-        new vec4(1, 0, 0, 0),
-        new vec4(-1, 0, 0, 0),
-        new vec4(0, 1, 0, 0),
-        new vec4(0, -1, 0, 0),
-        new vec4(0, 0, 1, 0),
-        new vec4(0, 0, -1, 0),
+        vec4(1, 0, 0, 0),
+        vec4(-1, 0, 0, 0),
+        vec4(0, 1, 0, 0),
+        vec4(0, -1, 0, 0),
+        vec4(0, 0, 1, 0),
+        vec4(0, 0, -1, 0),
     ];
 
     let t;
     const limit = r + EPSILON_RAY;
     for (const normal of normals) {
-        const faceRay = new Ray(new vec4(normal.xyz().multiply(r), 1), normal);
+        const normalRadius = vec4(mat_mul(normal.xyz(), r), 1);
+        const faceRay = new Ray(normalRadius, normal);
         t = implicitPlane(ray, faceRay);
         if (t < intersection.t) {
-            const pointOnShape = p.add(d.mulitply(t));
+            const pointOnShape = mat_add(p, mat_mul(d, t));
             if (
                 pointOnShape.x >= -limit &&
                 pointOnShape.x <= limit &&
@@ -198,8 +203,8 @@ const implicitSphere = (ray) => {
 
     const minT = implicitTrunk(ray, a, b, c);
 
-    const intersectionDir = p.add(d.mulitply(minT));
-    const intersectionNormal = new vec4(intersectionDir.xyz().mulitply(2), 0);
+    const intersectionDir = mat_add(p, mat_mul(d, minT));
+    const intersectionNormal = vec4(mat_mul(2, intersectionDir.xyz()), 0);
     intersection = new IntersectionData(intersectionNormal, minT);
 
     return intersection;

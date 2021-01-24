@@ -1,8 +1,16 @@
-import { lightTypes, clamp, dot, normalize } from '../lib';
+import {
+    lightTypes,
+    clamp,
+    dot,
+    normalize,
+    mat_mul,
+    mat_add,
+    negate,
+} from '../lib';
 
 const reflectRay = (v, n) => {
     const dotted = clamp(dot(n, v), 0, 1);
-    return n.multiply(2 * dotted).add(v.negate());
+    return mat_add(mat_mul(n, 2 * dotted), negate(v));
 };
 
 const computeAttenuation = (p_f, p_i, light) => {
@@ -22,14 +30,14 @@ const computeAttenuation = (p_f, p_i, light) => {
 
 const computeDiffuse = (intensity, N, L) => {
     const dotted = clamp(dot(N, L), 0, 1);
-    return intensity.multiply(dotted);
+    return mat_mul(intensity, dotted);
 };
 
 const computeSpecular = (intensity, N, L, V, shininess) => {
     // does the dot product need to be clamped?
     const R = normalize(reflectRay(L, N));
     const dotted = clamp(dot(R, V), 0, 1);
-    return intensity.multiply(Math.pow(dotted, shininess));
+    return mat_mul(intensity, Math.pow(dotted, shininess));
 };
 
 export { reflectRay, computeAttenuation, computeDiffuse, computeSpecular };

@@ -5,8 +5,10 @@ import {
     inv,
     transpose as mat_transpose,
     multiply as mat_mul,
+    add as mat_add,
     matrix,
     zeros,
+    chain,
 } from 'mathjs';
 // const normalize = () => console.error('No normalize!');
 // const dot = () => console.error('No dot!');
@@ -32,6 +34,7 @@ const mat_inv = (M) => {
         return inv(M);
     }
 };
+const negate = (M) => mat_mul(M, -1);
 
 const proxifyVec = (vec) =>
     new Proxy(vec, {
@@ -104,7 +107,7 @@ class old_vec3 {
         return this.z;
     }
 }
-class old_vec4 extends vec3 {
+class old_vec4 extends old_vec3 {
     constructor(x, y, z, w) {
         super(x, y, z);
         this.w = w;
@@ -192,8 +195,18 @@ class old_mat3 {
 }
 
 const mat3 = matrix;
-const vec3 = (x, y, z) => matrix([x, y, z]);
-const vec4 = (x, y, z, w) => matrix([x, y, z, w]);
+const vec3 = (x, y, z) => {
+    if (y === undefined && z === undefined) {
+        return matrix([x, x, x]);
+    }
+    return matrix([x, y, z]);
+};
+const vec4 = (x, y, z, w) => {
+    if (y === undefined && z === undefined && w === undefined) {
+        return matrix([x, x, x, x]);
+    }
+    return matrix([x, y, z, w]);
+};
 
 const zero_mat4 = () => zeros(4, 4);
 
@@ -331,8 +344,11 @@ export {
     mat_inv,
     mat_transpose,
     mat_mul,
+    mat_add,
+    negate,
     translate,
     scale,
     rotate,
+    chain,
     unused,
 };

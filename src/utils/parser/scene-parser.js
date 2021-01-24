@@ -27,14 +27,14 @@ import {
 let instantiatedObjects = {}; // TODO: make this non-global
 
 const getPosition = (xmlEl) =>
-    new vec4(
+    vec4(
         xmlEl.getAttribute('x'),
         xmlEl.getAttribute('y'),
         xmlEl.getAttribute('z'),
         1
     );
 const getDirection = (xmlEl) =>
-    new vec4(
+    vec4(
         xmlEl.getAttribute('x'),
         xmlEl.getAttribute('y'),
         xmlEl.getAttribute('z'),
@@ -101,7 +101,7 @@ const parseCamera = (camera) => {
 const parseLight = (light) => {
     let lightData = new LightData({
         type: lightTypes.POINT,
-        func: new vec3(1, 0, 0),
+        func: vec3(1, 0, 0),
     });
 
     for (const attr of light.children) {

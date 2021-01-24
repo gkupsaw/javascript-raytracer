@@ -11,6 +11,9 @@ import {
     mat_inv,
     mat_transpose,
     mat_mul,
+    mat_add,
+    negate,
+    chain,
 } from '../lib';
 import {
     computeAttenuation,
@@ -51,7 +54,7 @@ class RayScene {
         const filmToWorld = mat_inv(
             mat_mul(camera.getScaleMatrix(), camera.getViewMatrix())
         );
-        const pEye = filmToWorld * new vec4(0, 0, 0, 1);
+        const pEye = mat_mul(filmToWorld, vec4(0, 0, 0, 1));
         const yMax = height;
 
         let y;
@@ -74,15 +77,15 @@ class RayScene {
 
         let x;
         for (x = 0; x < xMax; x++) {
-            const filmPlaneLoc = new vec4(
+            const filmPlaneLoc = vec4(
                 (2 * x) / xMax - 1,
                 1 - (2 * y) / yMax,
                 -1,
                 1
             );
             // transform that point to world space
-            const worldSpaceLoc = filmToWorld * filmPlaneLoc;
-            const dir = normalize(worldSpaceLoc - pEye);
+            const worldSpaceLoc = mat_mul(filmToWorld, filmPlaneLoc);
+            const dir = normalize(mat_add(worldSpaceLoc, negate(pEye)));
             const ray = new Ray(pEye, dir);
 
             // calculate intersection of this ray for every shape in this.shapes
@@ -96,8 +99,10 @@ class RayScene {
             if (pixelIntersection.t === Infinity) {
                 data[xMax * y + x] = bgColor;
             } else {
-                const wscIntersectionPoint =
-                    ray.eye + ray.dir * pixelIntersection.t;
+                const wscIntersectionPoint = mat_add(
+                    ray.eye,
+                    mat_mul(ray.dir, pixelIntersection.t)
+                );
 
                 let pixelIntensity = this.computeIntensity(
                     initialDepth,
@@ -126,8 +131,8 @@ class RayScene {
             const objectToWorld = shape.inverseTransformation;
             // transform to object space (p + d*t = MO => M^-1 * (p + d*t) = O)
             const rayOS = new Ray(
-                objectToWorld * ray.eye,
-                objectToWorld * ray.dir
+                mat_mul(objectToWorld, ray.eye),
+                mat_mul(objectToWorld, ray.dir)
             );
 
             switch (shape.primitive.type) {
@@ -171,33 +176,36 @@ class RayScene {
         const EPSILON = 1e-2;
         const shape = oscIntersection.shape;
         const mat = shape.primitive.material;
-        const ambientIntensity = this.global.ka * mat.cAmbient;
-        let diffuseIntensity = this.global.kd * mat.cDiffuse;
-        const specularIntensity = this.global.ks * mat.cSpecular;
-        const recursiveIntensity = this.global.ks * mat.cReflective;
+        const ambientIntensity = mat_mul(this.global.ka, mat.cAmbient);
+        let diffuseIntensity = mat_mul(this.global.kd, mat.cDiffuse);
+        const specularIntensity = mat_mul(this.global.ks, mat.cSpecular);
+        const recursiveIntensity = mat_mul(this.global.ks, mat.cReflective);
         const V = normalize(-wscRayDir); // normalized wsc line of sight
         const shininess = mat.shininess;
 
-        let lightSummation = new vec4(0);
+        let lightSummation = vec4(0);
         const objectNormalToWorld = mat_transpose(
-            new mat3(shape.inverseTransformation)
+            //fixthis
+            mat3(shape.inverseTransformation)
         );
         const N = normalize(
-            new vec4(objectNormalToWorld * oscIntersection.normal.xyz(), 0)
+            //fixxyz
+            vec4(mat_mul(objectNormalToWorld, oscIntersection.normal.xyz()), 0)
         );
 
         // most of texture mapping is in this block
         if (settings.useTextureMapping && !shape.texture.isNull()) {
             const uvColor = computeUVColor(
                 oscIntersection,
-                shape.inverseTransformation * wscIntersectionPoint
+                mat_mul(shape.inverseTransformation, wscIntersectionPoint)
             );
             const blend = mat.blend;
+            //fixrgba
             diffuseIntensity = blend * uvColor + (1 - blend) * diffuseIntensity;
         }
 
         for (const light of this.lights) {
-            let L = new vec4(0);
+            let L = vec4(0);
 
             switch (light.type) {
                 case lightTypes.POINT:
@@ -206,14 +214,16 @@ class RayScene {
                     }
 
                     // from point TO light
-                    L = normalize(light.pos - wscIntersectionPoint);
+                    L = normalize(
+                        mat_add(light.pos, negate(wscIntersectionPoint))
+                    );
                     break;
                 case lightTypes.DIRECTIONAL:
                     if (!settings.useDirectionalLights) {
                         continue;
                     }
 
-                    L = normalize(-light.dir);
+                    L = normalize(negate(light.dir));
                     break;
                 default:
                     break;
@@ -223,7 +233,10 @@ class RayScene {
             // check for occlusion
             if (settings.useShadows) {
                 // need to offset to account for self-intersection
-                const offsetShadowSource = wscIntersectionPoint + N * EPSILON;
+                const offsetShadowSource = mat_add(
+                    wscIntersectionPoint,
+                    mat_mul(N, EPSILON)
+                );
                 const rayToLight = new Ray(offsetShadowSource, L);
                 const shadowRayIntersection = this.computeIntersection(
                     rayToLight
@@ -237,7 +250,7 @@ class RayScene {
                     // and a plane at the light source pointing towards the point
                     tToLight = ImplicitShapes.implicitPlane(
                         rayToLight,
-                        new Ray(light.pos, -L)
+                        new Ray(light.pos, negate(L))
                     );
                 }
 
@@ -251,7 +264,7 @@ class RayScene {
 
             let attenuation = 1;
             let diffuseComponent,
-                specularComponent = new vec4(0);
+                specularComponent = vec4(0);
             if (!isOccluded) {
                 if (useAttenuation) {
                     attenuation = computeAttenuation(
@@ -276,35 +289,44 @@ class RayScene {
                 }
             }
 
-            lightSummation +=
-                attenuation *
-                light.color *
-                (diffuseComponent + specularComponent);
+            lightSummation = chain(lightSummation).add(
+                chain(attenuation)
+                    .multiply(light.color)
+                    .multiply(mat_add((diffuseComponent, specularComponent)))
+            );
         }
 
         // most of reflection is in this block
-        let recursiveComponent = new vec4(0);
+        let recursiveComponent = vec4(0);
         if (settings.useReflection && depth < MAX_DEPTH) {
-            const R = normalize(reflectRay(-wscRayDir, N));
-            const offsetReflectionSource = wscIntersectionPoint + R * EPSILON;
+            const R = normalize(reflectRay(negate(wscRayDir), N));
+            const offsetReflectionSource = mat_add(
+                wscIntersectionPoint,
+                mat_mul(R, EPSILON)
+            );
             const nextRay = new Ray(offsetReflectionSource, R);
             const nextIntersection = this.computeIntersection(nextRay);
 
             if (nextIntersection.t !== Infinity) {
-                const nextIntersectionPoint =
-                    nextRay.eye + nextRay.dir * nextIntersection.t;
-                recursiveComponent =
-                    recursiveIntensity *
+                const nextIntersectionPoint = mat_add(
+                    nextRay.eye,
+                    mat_mul(nextRay.dir, nextIntersection.t)
+                );
+                recursiveComponent = mat_mul(
+                    recursiveIntensity,
                     this.computeIntensity(
                         depth + 1,
                         nextRay.dir,
                         nextIntersection,
                         nextIntersectionPoint
-                    );
+                    )
+                );
             }
         }
 
-        let final = ambientIntensity + lightSummation + recursiveComponent;
+        let final = chain(ambientIntensity)
+            .add(lightSummation)
+            .add(recursiveComponent);
         final = clamp(final, 0, 1);
 
         return final;

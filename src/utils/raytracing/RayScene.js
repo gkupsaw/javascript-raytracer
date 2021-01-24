@@ -15,6 +15,7 @@ import {
     xyz,
     negate,
     chain,
+    id4,
 } from '../lib';
 import {
     computeAttenuation,
@@ -55,9 +56,9 @@ class RayScene {
         const filmToWorld = mat_inv(
             mat_mul(camera.getScaleMatrix(), camera.getViewMatrix())
         );
-        console.log(camera.getScaleMatrix());
-        console.log(camera.getViewMatrix());
-        console.log(filmToWorld);
+        // console.log(camera.getScaleMatrix());
+        // console.log(camera.getViewMatrix());
+        // console.log(filmToWorld);
         const pEye = mat_mul(filmToWorld, vec4(0, 0, 0, 1));
         const yMax = height;
 
@@ -91,6 +92,9 @@ class RayScene {
             const worldSpaceLoc = mat_mul(filmToWorld, filmPlaneLoc);
             const dir = normalize(mat_add(worldSpaceLoc, negate(pEye)));
             const ray = new Ray(pEye, dir);
+            if (y === 0) {
+            } //console.log({ pEye, dir, worldSpaceLoc });
+            else break;
 
             // calculate intersection of this ray for every shape in this.shapes
             // find closest intersection
@@ -134,7 +138,7 @@ class RayScene {
             currIntersection;
 
         for (const shape of this.shapes) {
-            const objectToWorld = shape.inverseTransformation;
+            const objectToWorld = id4(); //shape.inverseTransformation;
             // transform to object space (p + d*t = MO => M^-1 * (p + d*t) = O)
             const rayOS = new Ray(
                 mat_mul(objectToWorld, ray.eye),

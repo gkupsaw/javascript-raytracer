@@ -60,6 +60,12 @@ const defaultData = {
     object: [],
 };
 
+const GLOBAL = 'globaldata';
+const LIGHT = 'lightdata';
+const CAMERA = 'cameradata';
+const TRANSBLOCK = 'transblock';
+const OBJECT = 'object';
+
 const tagnames = {
     global: {
         DIFFUSE: 'diffusecoeff',
@@ -76,12 +82,11 @@ const tagnames = {
         UP: 'up',
     },
     object: {
-        TRANSBLOCK: 'transblock',
         DIFFUSE: 'diffuse',
         SPECULAR: 'specular',
         AMBIENT: 'ambient',
     },
-    transform: {
+    transblock: {
         TRANSLATE: 'translate',
         SCALE: 'scale',
         ROTATE: 'rotate',
@@ -140,18 +145,18 @@ const parseObject = (object, transformations = []) => {
         case 'tree':
             for (const attr of object.children) {
                 switch (attr.tagName) {
-                    case tagnames.object.TRANSBLOCK:
+                    case TRANSBLOCK:
                         for (const treeChild of attr.children) {
                             switch (treeChild.tagName) {
-                                case tagnames.treeChild.TRANSLATE:
-                                case tagnames.treeChild.ROTATE:
-                                case tagnames.treeChild.SCALE:
+                                case tagnames.transblock.TRANSLATE:
+                                case tagnames.transblock.ROTATE:
+                                case tagnames.transblock.SCALE:
                                     transformations.push({
                                         type: treeChild.tagName,
                                         vec: extractXYZ(treeChild),
                                     });
                                     break;
-                                case 'object':
+                                case OBJECT:
                                     objects.push(
                                         parseObject(treeChild, transformations)
                                     );
@@ -163,7 +168,7 @@ const parseObject = (object, transformations = []) => {
                             }
                         }
                         break;
-                    case 'object':
+                    case OBJECT:
                         objects.push(parseObject(attr, transformations));
                         break;
                     default:
@@ -202,7 +207,7 @@ const parse = (scene) => {
     let child = scenefile.firstElementChild;
     while (child) {
         switch (child.tagName) {
-            case 'globaldata':
+            case GLOBAL:
                 for (const datum of child.children) {
                     switch (datum.tagName) {
                         case tagnames.global.DIFFUSE:
@@ -222,7 +227,7 @@ const parse = (scene) => {
                     }
                 }
                 break;
-            case 'lightdata':
+            case LIGHT:
                 const light = child;
                 const lightData = {};
                 for (const attr of light.children) {
@@ -245,7 +250,7 @@ const parse = (scene) => {
                 }
                 data.light.push(lightData);
                 break;
-            case 'cameradata':
+            case CAMERA:
                 const camera = child;
                 const cameraData = {};
                 for (const attr of camera.children) {
@@ -265,7 +270,7 @@ const parse = (scene) => {
                 }
                 data.camera = cameraData;
                 break;
-            case 'object':
+            case OBJECT:
                 data.object.concat(parseObject(child));
                 break;
             default:

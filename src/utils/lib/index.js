@@ -48,4 +48,14 @@ class vec4 extends vec3 {
     }
 }
 
-export { vec3, vec4 };
+class RGBA {
+    constructor(r, g, b, a) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+    }
+}
+
+const unused = { proxifyVec, vec3Obj, vec4Obj };
+export { vec3, vec4, RGBA, unused };

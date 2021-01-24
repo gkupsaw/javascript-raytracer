@@ -1,4 +1,4 @@
-import { vec3 } from '../lib';
+import { vec4, RGBA } from '../lib';
 import {
     defaultData,
     GLOBAL,
@@ -11,17 +11,26 @@ import {
 
 let instantiatedObjects = {}; // TODO: make this non-global
 
-const extractXYZ = (xmlEl) =>
-    new vec3(
+const getPosition = (xmlEl) =>
+    new vec4(
         xmlEl.getAttribute('x'),
         xmlEl.getAttribute('y'),
-        xmlEl.getAttribute('z')
+        xmlEl.getAttribute('z'),
+        1
     );
-const extractRGB = (xmlEl) =>
-    new vec3(
+const getDirection = (xmlEl) =>
+    new vec4(
+        xmlEl.getAttribute('x'),
+        xmlEl.getAttribute('y'),
+        xmlEl.getAttribute('z'),
+        0
+    );
+const getRGBA = (xmlEl) =>
+    new RGBA(
         xmlEl.getAttribute('r'),
         xmlEl.getAttribute('g'),
-        xmlEl.getAttribute('b')
+        xmlEl.getAttribute('b'),
+        1
     );
 
 const parseGlobal = (global) => {
@@ -60,10 +69,10 @@ const parseCamera = (camera) => {
     for (const attr of camera.children) {
         switch (attr.tagName) {
             case tagnames.camera.POS:
-                cameraData['pos'] = extractXYZ(attr);
+                cameraData['pos'] = getPosition(attr);
                 break;
             case tagnames.camera.UP:
-                cameraData['up'] = extractXYZ(attr);
+                cameraData['up'] = getDirection(attr);
                 break;
             default:
                 console.error(`Unknown camera data tag: ${attr.tagName}`);
@@ -86,11 +95,11 @@ const parseLight = (light) => {
                 break;
             case tagnames.light.COLOR:
                 propName = 'color';
-                propVal = extractRGB(attr);
+                propVal = getRGBA(attr);
                 break;
             case tagnames.light.POS:
                 propName = 'position';
-                propVal = extractXYZ(attr);
+                propVal = getPosition(attr);
                 break;
             default:
                 console.error(`Unknown light data tag: ${attr.tagName}`);
@@ -116,14 +125,14 @@ const parseObject = (object, transformations = []) => {
             for (const attr of object.children) {
                 switch (attr.tagName) {
                     case tagnames.object.DIFFUSE:
-                        objectData['diffuse'] = extractRGB(attr);
+                        objectData['diffuse'] = getRGBA(attr);
                         break;
                     case tagnames.object.SPECULAR:
-                        objectData['specular'] = extractRGB(attr);
+                        objectData['specular'] = getRGBA(attr);
 
                         break;
                     case tagnames.object.AMBIENT:
-                        objectData['ambient'] = extractRGB(attr);
+                        objectData['ambient'] = getRGBA(attr);
                         break;
                     default:
                         console.error(
@@ -150,7 +159,9 @@ const parseObject = (object, transformations = []) => {
                                 case tagnames.transblock.SCALE:
                                     transformations.push({
                                         type: treeChild.tagName,
-                                        vec: extractXYZ(treeChild),
+                                        x: treeChild.getAttribute('x'),
+                                        y: treeChild.getAttribute('y'),
+                                        z: treeChild.getAttribute('z'),
                                     });
                                     break;
                                 case OBJECT:
@@ -194,12 +205,6 @@ const parse = (scene) => {
     let data = { ...defaultData };
 
     const scenefile = xmlDoc.getElementsByTagName('scenefile')[0];
-
-    // if (scenefiledata.length !== 1) {
-    //     console.error(
-    //         'No or too many scenefiles in one file. Using first if it exists.'
-    //     );
-    // }
 
     let child = scenefile.firstElementChild;
     while (child) {

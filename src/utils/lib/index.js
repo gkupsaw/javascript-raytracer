@@ -57,5 +57,34 @@ class RGBA {
     }
 }
 
+class Ray {
+    constructor(eye, dir) {
+        this.eye = eye;
+        this.dir = dir;
+    }
+}
+
+class IntersectionData {
+    constructor() {}
+}
+
+const primitiveTypes = {
+    CONE: 'CONE',
+    CYLINDER: 'CYLINDER',
+    CUBE: 'CUBE',
+    SPHERE: 'SPHERE',
+};
+
+const lightTypes = { POINT: 'POINT', DIRECTIONAL: 'DIRECTIONAL' };
+
 const unused = { proxifyVec, vec3Obj, vec4Obj };
-export { vec3, vec4, RGBA, unused };
+export {
+    vec3,
+    vec4,
+    RGBA,
+    Ray,
+    IntersectionData,
+    primitiveTypes,
+    lightTypes,
+    unused,
+};

@@ -1,247 +1,302 @@
-// const MAX_DEPTH = 4;
+import { vec4, RGBA, Ray, IntersectionData, primitiveTypes } from '../lib';
 
-// class RayScene{
-//     constructor() {
-//         this.implicitShapes = ImplicitShapes();
-//     }
+const MAX_DEPTH = 4;
+const mat_inv = () => {};
+const mat_transpose = () => {};
+const mat_mul = () => {};
+const vec_normalize = () => {};
+const clamp = () => {};
 
-//     render = (canvas, camera) => {
-//         m_halt = false;
+const processEvents = () => {};
 
-//         height = canvas.height();
+const computeUVColor = () => {};
 
-//         glm::mat4x4 filmToWorld = glm::inverse(camera->getScaleMatrix() * camera->getViewMatrix());
-//         glm::vec4 pEye = filmToWorld * glm::vec4(0,0,0,1);
-//         int yMax = height;
+const computeAttenuation = () => {};
+const computeDiffuse = () => {};
+const computeSpecular = () => {};
+const reflectRay = () => {};
 
-//         int y;
-//         for (y = 0 ; y < yMax ; y++) {
-//             renderRow(canvas, y, filmToWorld, pEye);
-//             if (m_halt) {
-//                 break;
-//             }
-//         }
+const mat3 = () => {};
 
-//         m_halt = false;
-//     }
-// }
+const settings = {};
 
-// void RayScene::rayTrace(Canvas2D* canvas, Camera *camera) {
+class RayScene {
+    constructor() {
+        this.implicitShapes = ImplicitShapes();
+        this.halt = false;
+        this.shapes = [];
+        this.lights = [];
+    }
 
-// }
+    cancel = () => {
+        this.m_halt = true;
+    };
 
-// void RayScene::cancel() {
-//     m_halt = true;
-// }
+    render = (canvas, camera) => {
+        this.m_halt = false;
 
-// void RayScene::renderRow(Canvas2D* canvas, int y,
-//                          const glm::mat4x4 &filmToWorld, const glm::vec4 &pEye) {
-//     RGBA* data = canvas->data();
-//     int yMax = canvas->height();
-//     int xMax = canvas->width();
-//     RGBA bgColor = RGBA(0, 0, 0, 255);
+        const height = canvas.height();
 
-//     int x;
-//     for (x = 0 ; x < xMax ; x++) {
-//         glm::vec4 filmPlaneLoc = glm::vec4(
-//                     (2.f * x / xMax) - 1.f,
-//                     1.f - (2.f * y / yMax),
-//                     -1.f,
-//                     1.f);
-//         // transform that point to world space
-//         glm::vec4 worldSpaceLoc = filmToWorld * filmPlaneLoc;
-//         glm::vec4 dir = glm::normalize(worldSpaceLoc - pEye);
-//         Ray ray = { pEye, dir };
+        const filmToWorld = mat_inv(
+            mat_mul(camera.getScaleMatrix() * camera.getViewMatrix())
+        );
+        const pEye = filmToWorld * new vec4(0, 0, 0, 1);
+        const yMax = height;
 
-//         // calculate intersection of this ray for every shape in m_shapes
-//         // find closest intersection
-//         // calculate lighting at that point
+        let y;
+        for (y = 0; y < yMax; y++) {
+            renderRow(canvas, y, filmToWorld, pEye);
+            if (m_halt) {
+                break;
+            }
+        }
 
-//         int initialDepth = 0;
-//         IntersectionData pixelIntersection = computeIntersection(ray);
+        this.m_halt = false;
+    };
 
-//         // no intersection
-//         if (pixelIntersection.t == INFINITY) {
-//             data[xMax * y + x] = bgColor;
-//         }
-//         else {
-//             glm::vec4 wscIntersectionPoint = ray.eye + ray.dir * pixelIntersection.t;
+    renderRow = (canvas, y, filmToWorld, pEye) => {
+        const data = canvas.data();
+        const yMax = canvas.height();
+        const xMax = canvas.width();
+        const bgColor = new RGBA(0, 0, 0, 255);
 
-//             glm::vec4 pixelIntensity = computeIntensity(initialDepth, ray.dir,
-//                                                         pixelIntersection, wscIntersectionPoint);
-//             pixelIntensity *= 255.f;
-//             data[xMax * y + x] = RGBA(pixelIntensity.x, pixelIntensity.y, pixelIntensity.z, 255);
-//         }
-//     }
+        let x;
+        for (x = 0; x < xMax; x++) {
+            const filmPlaneLoc = new vec4(
+                (2 * x) / xMax - 1,
+                1 - (2 * y) / yMax,
+                -1,
+                1
+            );
+            // transform that point to world space
+            const worldSpaceLoc = filmToWorld * filmPlaneLoc;
+            const dir = vec_normalize(worldSpaceLoc - pEye);
+            const ray = new Ray(pEye, dir);
 
-//     QCoreApplication::processEvents();
-//     canvas->update();
-// }
+            // calculate intersection of this ray for every shape in m_shapes
+            // find closest intersection
+            // calculate lighting at that point
 
-// IntersectionData RayScene::computeIntersection(const Ray &ray) {
-//     IntersectionData closestIntersection, currIntersection;
+            const initialDepth = 0;
+            const pixelIntersection = computeIntersection(ray);
 
-//     for (CS123ShapeData shape : m_shapes) {
-//         glm::mat4x4 objectToWorld = shape.inverseTransformation;
-//         // transform to object space (p + d*t = MO => M^-1 * (p + d*t) = O)
-//         Ray rayOS = { objectToWorld * ray.eye, objectToWorld * ray.dir };
+            // no intersection
+            if (pixelIntersection.t === Infinity) {
+                data[xMax * y + x] = bgColor;
+            } else {
+                const wscIntersectionPoint =
+                    ray.eye + ray.dir * pixelIntersection.t;
 
-//         switch (shape.primitive.type) {
-//             case PrimitiveType::PRIMITIVE_CONE:
-//                 currIntersection = m_implicitUtils.implicitCone(rayOS);
-//                 break;
-//             case PrimitiveType::PRIMITIVE_CYLINDER:
-//                 currIntersection = m_implicitUtils.implicitCylinder(rayOS);
-//                 break;
-//             case PrimitiveType::PRIMITIVE_CUBE:
-//                 currIntersection = m_implicitUtils.implicitCube(rayOS);
-//                 break;
-//             case PrimitiveType::PRIMITIVE_SPHERE:
-//                 currIntersection = m_implicitUtils.implicitSphere(rayOS);
-//                 break;
-//             default:
-//                 currIntersection = IntersectionData();
-//                 break;
-//         }
-//         if (currIntersection.t < closestIntersection.t) {
-//             closestIntersection = currIntersection;
-//             closestIntersection.shape = shape;
-//         }
-//     }
+                let pixelIntensity = computeIntensity(
+                    initialDepth,
+                    ray.dir,
+                    pixelIntersection,
+                    wscIntersectionPoint
+                );
+                pixelIntensity *= 255;
+                data[xMax * y + x] = new RGBA(
+                    pixelIntensity.x,
+                    pixelIntensity.y,
+                    pixelIntensity.z,
+                    255
+                );
+            }
+        }
 
-//     return closestIntersection;
-// }
+        processEvents();
+        canvas.update();
+    };
 
-// glm::vec4 RayScene::computeIntensity(int depth, const glm::vec4 &wscRayDir,
-//                                      const IntersectionData &oscIntersection, const glm::vec4 &wscIntersectionPoint) {
-//     // for testing
-//     bool useAttenuation = true;
-//     bool useDiffuse = true;
-//     bool useSpecular = true;
+    computeIntersection = (ray) => {
+        let closestIntersection, currIntersection;
 
-//     float EPSILON = 1e-2;
-//     CS123ShapeData shape = oscIntersection.shape;
-//     CS123SceneMaterial mat = shape.primitive.material;
-//     glm::vec4 ambientIntensity = m_global.ka * mat.cAmbient;
-//     glm::vec4 diffuseIntensity = m_global.kd * mat.cDiffuse;
-//     glm::vec4 specularIntensity = m_global.ks * mat.cSpecular;
-//     glm::vec4 recursiveIntensity = m_global.ks * mat.cReflective;
-//     glm::vec4 V = glm::normalize(-wscRayDir); // normalized wsc line of sight
-//     float shininess = mat.shininess;
+        for (const shape of this.m_shapes) {
+            const objectToWorld = shape.inverseTransformation;
+            // transform to object space (p + d*t = MO => M^-1 * (p + d*t) = O)
+            const rayOS = new Ray(
+                objectToWorld * ray.eye,
+                objectToWorld * ray.dir
+            );
 
-//     glm::vec4 lightSummation = glm::vec4(0.f);
-//     glm::mat3 objectNormalToWorld = glm::transpose(glm::mat3(shape.inverseTransformation));
-//     glm::vec4 N = glm::normalize(glm::vec4(objectNormalToWorld * oscIntersection.normal.xyz(), 0.f));
+            switch (shape.primitive.type) {
+                case primitiveTypes.CONE:
+                    currIntersection = m_implicitUtils.implicitCone(rayOS);
+                    break;
+                case primitiveTypes.CYLINDER:
+                    currIntersection = m_implicitUtils.implicitCylinder(rayOS);
+                    break;
+                case primitiveTypes.CUBE:
+                    currIntersection = m_implicitUtils.implicitCube(rayOS);
+                    break;
+                case primitiveTypes.SPHERE:
+                    currIntersection = m_implicitUtils.implicitSphere(rayOS);
+                    break;
+                default:
+                    currIntersection = new IntersectionData();
+                    break;
+            }
+            if (currIntersection.t < closestIntersection.t) {
+                closestIntersection = currIntersection;
+                closestIntersection.shape = shape;
+            }
+        }
 
-//     // most of texture mapping is in this block
-//     if (settings.useTextureMapping && !shape.texture.isNull()) {
-//         glm::vec4 uvColor = TextureMappingUtils::computeUVColor(
-//                     oscIntersection, shape.inverseTransformation * wscIntersectionPoint);
-//         float blend = mat.blend;
-//         diffuseIntensity = blend * uvColor + (1 - blend) * diffuseIntensity;
-//     }
+        return closestIntersection;
+    };
 
-//     for (CS123SceneLightData light : m_lights) {
-//         glm::vec4 L = glm::vec4(0);
+    computeIntensity = (
+        depth,
+        wscRayDir,
+        oscIntersection,
+        wscIntersectionPoint
+    ) => {
+        // for testing
+        const useAttenuation = true;
+        const useDiffuse = true;
+        const useSpecular = true;
 
-//         switch (light.type) {
-//             case LightType::LIGHT_POINT: {
-//                 if (!settings.usePointLights) {
-//                     continue;
-//                 }
+        const EPSILON = 1e-2;
+        const shape = oscIntersection.shape;
+        const mat = shape.primitive.material;
+        const ambientIntensity = m_global.ka * mat.cAmbient;
+        let diffuseIntensity = m_global.kd * mat.cDiffuse;
+        const specularIntensity = m_global.ks * mat.cSpecular;
+        const recursiveIntensity = m_global.ks * mat.cReflective;
+        const V = vec_normalize(-wscRayDir); // normalized wsc line of sight
+        const shininess = mat.shininess;
 
-//                 // from point TO light
-//                 L = glm::normalize(light.pos - wscIntersectionPoint);
+        let lightSummation = new vec4(0);
+        const objectNormalToWorld = mat_transpose(
+            mat3(shape.inverseTransformation)
+        );
+        const N = vec_normalize(
+            new vec4(objectNormalToWorld * oscIntersection.normal.xyz(), 0)
+        );
 
-//                 break;
-//             }
-//             case LightType::LIGHT_DIRECTIONAL: {
-//                 if (!settings.useDirectionalLights) {
-//                     continue;
-//                 }
+        // most of texture mapping is in this block
+        if (settings.useTextureMapping && !shape.texture.isNull()) {
+            const uvColor = computeUVColor(
+                oscIntersection,
+                shape.inverseTransformation * wscIntersectionPoint
+            );
+            const blend = mat.blend;
+            diffuseIntensity = blend * uvColor + (1 - blend) * diffuseIntensity;
+        }
 
-//                 L = glm::normalize(-light.dir);
+        for (const light of this.lights) {
+            let L = new vec4(0);
 
-//                 break;
-//             }
-//             default: {
-//                 break;
-//             }
-//         }
+            switch (light.type) {
+                case lightTypes.LIGHT_POINT: {
+                    if (!settings.usePointLights) {
+                        continue;
+                    }
 
-//         bool isOccluded = false;
-//         // check for occlusion
-//         if (settings.useShadows) {
-//             // need to offset to account for self-intersection
-//             glm::vec4 offsetShadowSource = wscIntersectionPoint + N * EPSILON;
-//             Ray rayToLight = { offsetShadowSource, L };
-//             IntersectionData shadowRayIntersection = computeIntersection(rayToLight);
+                    // from point TO light
+                    L = vec_normalize(light.pos - wscIntersectionPoint);
 
-//             // only count intersections up to the light, and not past
-//             // (only applicable for lights with position)
-//             float tToLight = INFINITY;
-//             if (light.type != LightType::LIGHT_DIRECTIONAL) {
-//                 // compute t for intersection with of ray from point to light
-//                 // and a plane at the light source pointing towards the point
-//                 tToLight = m_implicitUtils.implicitPlane(rayToLight, { light.pos, -L });
-//             }
+                    break;
+                }
+                case lightTypes.LIGHT_DIRECTIONAL: {
+                    if (!settings.useDirectionalLights) {
+                        continue;
+                    }
 
-//             if (shadowRayIntersection.t != INFINITY && shadowRayIntersection.t < tToLight) {
-//                 isOccluded = true;
-//             }
-//         }
+                    L = vec_normalize(-light.dir);
 
-//         float attenuation = 1;
-//         glm::vec4 diffuseComponent, specularComponent = glm::vec4(0);
-//         if (!isOccluded) {
-//             if (useAttenuation) {
-//                 attenuation = LightingUtils::computeAttenuation(light.pos, wscIntersectionPoint, light);
-//             }
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
 
-//             if (useDiffuse) {
-//                 diffuseComponent = LightingUtils::computeDiffuse(diffuseIntensity, N, L);
-//             }
+            let isOccluded = false;
+            // check for occlusion
+            if (settings.useShadows) {
+                // need to offset to account for self-intersection
+                const offsetShadowSource = wscIntersectionPoint + N * EPSILON;
+                const rayToLight = new Ray(offsetShadowSource, L);
+                const shadowRayIntersection = computeIntersection(rayToLight);
 
-//             if (useSpecular) {
-//                 specularComponent = LightingUtils::computeSpecular(specularIntensity, N, L, V, shininess);
-//             }
-//         }
+                // only count intersections up to the light, and not past
+                // (only applicable for lights with position)
+                let tToLight = Infinity;
+                if (light.type != lightTypes.LIGHT_DIRECTIONAL) {
+                    // compute t for intersection with of ray from point to light
+                    // and a plane at the light source pointing towards the point
+                    tToLight = m_implicitUtils.implicitPlane(
+                        rayToLight,
+                        new Ray(light.pos, -L)
+                    );
+                }
 
-//         lightSummation += attenuation * light.color * (diffuseComponent + specularComponent);
-//     }
+                if (
+                    shadowRayIntersection.t != Infinity &&
+                    shadowRayIntersection.t < tToLight
+                ) {
+                    isOccluded = true;
+                }
+            }
 
-//     // most of reflection is in this block
-//     glm::vec4 recursiveComponent = glm::vec4(0);
-//     if (settings.useReflection && depth < MAX_DEPTH) {
-//         glm::vec4 R = glm::normalize(LightingUtils::reflectRay(-wscRayDir, N));
-//         glm::vec4 offsetReflectionSource = wscIntersectionPoint + R * EPSILON;
-//         Ray nextRay = { offsetReflectionSource, R };
-//         IntersectionData nextIntersection = computeIntersection(nextRay);
+            let attenuation = 1;
+            let diffuseComponent,
+                specularComponent = new vec4(0);
+            if (!isOccluded) {
+                if (useAttenuation) {
+                    attenuation = computeAttenuation(
+                        light.pos,
+                        wscIntersectionPoint,
+                        light
+                    );
+                }
 
-//         if (nextIntersection.t != INFINITY) {
-//             glm::vec4 nextIntersectionPoint = nextRay.eye + nextRay.dir * nextIntersection.t;
-//             recursiveComponent = recursiveIntensity *
-//                     computeIntensity(depth + 1, nextRay.dir, nextIntersection, nextIntersectionPoint);
-//         }
-//     }
+                if (useDiffuse) {
+                    diffuseComponent = computeDiffuse(diffuseIntensity, N, L);
+                }
 
-//     glm::vec4 final = ambientIntensity + lightSummation + recursiveComponent;
-//     final = glm::clamp(final, 0.f, 1.f);
+                if (useSpecular) {
+                    specularComponent = computeSpecular(
+                        specularIntensity,
+                        N,
+                        L,
+                        V,
+                        shininess
+                    );
+                }
+            }
 
-// //    glm::vec2 uv = TextureMappingUtils::computeUV(oscIntersection, shape.inverseTransformation * wscIntersectionPoint);
-// //    int w = shape.texture.width();
-// //    int h = shape.texture.height();
-// //    float j = shape.primitive.material.textureMap.repeatU;
-// //    float k = shape.primitive.material.textureMap.repeatV;
-// //    // is this casting bad practice?
-// //    float s = ((int) (uv.x * w * j)) % w;
-// //    float t = ((int) (uv.y * h * k)) % h;
-// //    s /= 255.f;
-// //    t /= 255.f;
-// //    std::cout << glm::to_string(uv) << std::endl;
-// //    std::cout << s << std::endl;
-// //    std::cout << t << std::endl;
+            lightSummation +=
+                attenuation *
+                light.color *
+                (diffuseComponent + specularComponent);
+        }
 
-//     return glm::clamp(final, 0.f, 1.f);
+        // most of reflection is in this block
+        let recursiveComponent = new vec4(0);
+        if (settings.useReflection && depth < MAX_DEPTH) {
+            const R = vec_normalize(reflectRay(-wscRayDir, N));
+            const offsetReflectionSource = wscIntersectionPoint + R * EPSILON;
+            const nextRay = new Ray(offsetReflectionSource, R);
+            const nextIntersection = computeIntersection(nextRay);
 
-// }
+            if (nextIntersection.t != Infinity) {
+                const nextIntersectionPoint =
+                    nextRay.eye + nextRay.dir * nextIntersection.t;
+                recursiveComponent =
+                    recursiveIntensity *
+                    computeIntensity(
+                        depth + 1,
+                        nextRay.dir,
+                        nextIntersection,
+                        nextIntersectionPoint
+                    );
+            }
+        }
+
+        let final = ambientIntensity + lightSummation + recursiveComponent;
+        final = clamp(final, 0, 1);
+
+        return final;
+    };
+}

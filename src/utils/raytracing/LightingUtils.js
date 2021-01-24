@@ -19,12 +19,12 @@ const computeAttenuation = (p_f, p_i, light) => {
     }
 
     const sqrD =
-        Math.pow(p_f.x + p_i.x, 2) +
-        Math.pow(p_f.y + p_i.y, 2) +
-        Math.pow(p_f.z + p_i.z, 2);
-    const c_const = light.func.x;
-    const c_lin = light.func.y;
-    const c_quad = light.func.z;
+        Math.pow(p_f.x() + p_i.x(), 2) +
+        Math.pow(p_f.y() + p_i.y(), 2) +
+        Math.pow(p_f.z() + p_i.z(), 2);
+    const c_const = light.func.x();
+    const c_lin = light.func.y();
+    const c_quad = light.func.z();
     return clamp(1 / (c_const + c_lin * Math.sqrt(sqrD) + c_quad * sqrD), 0, 1);
 };
 

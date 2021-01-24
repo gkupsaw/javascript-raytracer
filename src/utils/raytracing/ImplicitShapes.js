@@ -26,8 +26,8 @@ const implicitTrunk = (ray, a, b, c, top, bottom) => {
         if (t1 >= 0) {
             const intersectPoint1 = mat_add(p, mat_mul(d, t1));
             if (
-                intersectPoint1.y >= bottom - EPSILON_RAY &&
-                intersectPoint1.y <= top + EPSILON_RAY
+                intersectPoint1.y() >= bottom - EPSILON_RAY &&
+                intersectPoint1.y() <= top + EPSILON_RAY
             ) {
                 minT = t1;
             }
@@ -36,7 +36,7 @@ const implicitTrunk = (ray, a, b, c, top, bottom) => {
         const t2 = (-b - sqrtDiscr) / denom;
         if (t2 >= 0 && t2 < minT) {
             const intersectPoint2 = mat_add(p, mat_mul(d, t2));
-            if (intersectPoint2.y >= bottom && intersectPoint2.y <= top) {
+            if (intersectPoint2.y() >= bottom && intersectPoint2.y() <= top) {
                 minT = t2;
             }
         }
@@ -65,22 +65,23 @@ const implicitCone = (ray) => {
     const m = 2;
     const bottomR = (top - bottom) / m;
 
-    const a = Math.pow(d.x, 2) + Math.pow(d.z, 2) - Math.pow(d.y, 2) / 4;
-    const b = 2 * p.x * d.x + 2 * p.z * d.z - (p.y * d.y) / 2 + d.y / 4;
+    const a = Math.pow(d.x(), 2) + Math.pow(d.z(), 2) - Math.pow(d.y(), 2) / 4;
+    const b =
+        2 * p.x() * d.x() + 2 * p.z() * d.z() - (p.y() * d.y()) / 2 + d.y() / 4;
     const c =
-        Math.pow(p.x, 2) +
-        Math.pow(p.z, 2) -
-        Math.pow(p.y, 2) / 4 +
-        p.y / 4 -
+        Math.pow(p.x(), 2) +
+        Math.pow(p.z(), 2) -
+        Math.pow(p.y(), 2) / 4 +
+        p.y() / 4 -
         Math.pow(top / m, 2);
 
     const trunkT = implicitTrunk(ray, a, b, c);
     const intersectionPoint1 = mat_add(p, mat_mul(d, trunkT));
     const normalAtIntersection = normalize(
         vec4(
-            2 * intersectionPoint1.x,
-            (0.5 - intersectionPoint1.y) / 2,
-            2 * intersectionPoint1.z,
+            2 * intersectionPoint1.x(),
+            (0.5 - intersectionPoint1.y()) / 2,
+            2 * intersectionPoint1.z(),
             0
         )
     );
@@ -91,8 +92,8 @@ const implicitCone = (ray) => {
     if (t3 < intersection.t) {
         const intersectionPoint2 = mat_add(p, mat_mul(d, t3));
         if (
-            Math.pow(intersectionPoint2.x, 2) +
-                Math.pow(intersectionPoint2.z, 2) <=
+            Math.pow(intersectionPoint2.x(), 2) +
+                Math.pow(intersectionPoint2.z(), 2) <=
             Math.pow(bottomR, 2)
         ) {
             intersection = new IntersectionData(bottomCapNormal.dir, t3);
@@ -111,14 +112,14 @@ const implicitCylinder = (ray) => {
     const bottom = -0.5;
     const r = 0.5;
 
-    const a = Math.pow(d.x, 2) + Math.pow(d.z, 2);
-    const b = 2 * p.x * d.x + 2 * p.z * d.z;
-    const c = Math.pow(p.x, 2) + Math.pow(p.z, 2) - Math.pow(r, 2);
+    const a = Math.pow(d.x(), 2) + Math.pow(d.z(), 2);
+    const b = 2 * p.x() * d.x() + 2 * p.z() * d.z();
+    const c = Math.pow(p.x(), 2) + Math.pow(p.z(), 2) - Math.pow(r, 2);
 
     const trunkT = implicitTrunk(ray, a, b, c);
     const intersectionPoint1 = mat_add(p, mat_mul(d, trunkT));
     const intersectionNormal = normalize(
-        vec4(intersectionPoint1.x * 2, 0, intersectionPoint1.z * 2, 0)
+        vec4(intersectionPoint1.x() * 2, 0, intersectionPoint1.z() * 2, 0)
     );
 
     intersection = new IntersectionData(intersectionNormal, trunkT);
@@ -128,8 +129,8 @@ const implicitCylinder = (ray) => {
     if (t3 < intersection.t) {
         const intersectionPoint2 = mat_add(p, mat_mul(d, t3));
         if (
-            Math.pow(intersectionPoint2.x, 2) +
-                Math.pow(intersectionPoint2.z, 2) <=
+            Math.pow(intersectionPoint2.x(), 2) +
+                Math.pow(intersectionPoint2.z(), 2) <=
             Math.pow(r, 2)
         ) {
             intersection = new IntersectionData(bottomCapNormal.dir, t3);
@@ -141,8 +142,8 @@ const implicitCylinder = (ray) => {
     if (t4 < intersection.t) {
         const intersectionPoint3 = mat_add(p, mat_mul(d, t4));
         if (
-            Math.pow(intersectionPoint3.x, 2) +
-                Math.pow(intersectionPoint3.z, 2) <=
+            Math.pow(intersectionPoint3.x(), 2) +
+                Math.pow(intersectionPoint3.z(), 2) <=
             Math.pow(r, 2)
         ) {
             intersection = new IntersectionData(topCapNormal.dir, t4);
@@ -176,12 +177,12 @@ const implicitCube = (ray) => {
         if (t < intersection.t) {
             const pointOnShape = mat_add(p, mat_mul(d, t));
             if (
-                pointOnShape.x >= -limit &&
-                pointOnShape.x <= limit &&
-                pointOnShape.y >= -limit &&
-                pointOnShape.y <= limit &&
-                pointOnShape.z >= -limit &&
-                pointOnShape.z <= limit
+                pointOnShape.x() >= -limit &&
+                pointOnShape.x() <= limit &&
+                pointOnShape.y() >= -limit &&
+                pointOnShape.y() <= limit &&
+                pointOnShape.z() >= -limit &&
+                pointOnShape.z() <= limit
             ) {
                 intersection = new IntersectionData(normal, t);
             }
@@ -197,10 +198,13 @@ const implicitSphere = (ray) => {
     const p = ray.eye;
     const d = ray.dir;
 
-    const a = Math.pow(d.x, 2) + Math.pow(d.z, 2) + Math.pow(d.y, 2);
-    const b = 2 * p.x * d.x + 2 * p.z * d.z + 2 * p.y * d.y;
+    const a = Math.pow(d.x(), 2) + Math.pow(d.z(), 2) + Math.pow(d.y(), 2);
+    const b = 2 * p.x() * d.x() + 2 * p.z() * d.z() + 2 * p.y() * d.y();
     const c =
-        Math.pow(p.x, 2) + Math.pow(p.z, 2) + Math.pow(p.y, 2) - Math.pow(r, 2);
+        Math.pow(p.x(), 2) +
+        Math.pow(p.z(), 2) +
+        Math.pow(p.y(), 2) -
+        Math.pow(r, 2);
 
     const minT = implicitTrunk(ray, a, b, c);
 

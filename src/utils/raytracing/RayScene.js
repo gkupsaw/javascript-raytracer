@@ -114,9 +114,9 @@ class RayScene {
                 );
                 pixelIntensity *= 255;
                 data[xMax * y + x] = new RGBA(
-                    pixelIntensity.x,
-                    pixelIntensity.y,
-                    pixelIntensity.z,
+                    pixelIntensity.x(),
+                    pixelIntensity.y(),
+                    pixelIntensity.z(),
                     255
                 );
             }

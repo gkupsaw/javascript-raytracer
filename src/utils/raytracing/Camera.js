@@ -32,8 +32,6 @@ class Camera {
         this.near = 1;
         this.far = 30;
 
-        console.log(this.u);
-
         this.updateViewMatrix();
         this.updateProjectionMatrix();
     }
@@ -183,9 +181,9 @@ class Camera {
 
     updateRotationMatrix() {
         const mat = mat4x4(
-            [this.u.x, this.u.y, this.u.z, 0],
-            [this.v.x, this.v.y, this.v.z, 0],
-            [this.w.x, this.w.y, this.w.z, 0],
+            [this.u.x(), this.u.y(), this.u.z(), 0],
+            [this.v.x(), this.v.y(), this.v.z(), 0],
+            [this.w.x(), this.w.y(), this.w.z(), 0],
             [0, 0, 0, 1]
         );
         this.rotationMatrix = transpose(mat); // transpose to row-major order
@@ -193,9 +191,9 @@ class Camera {
 
     updateTranslationMatrix() {
         const mat = mat4x4(
-            [1, 0, 0, -this.eye.x],
-            [0, 1, 0, -this.eye.y],
-            [0, 0, 1, -this.eye.z],
+            [1, 0, 0, -this.eye.x()],
+            [0, 1, 0, -this.eye.y()],
+            [0, 0, 1, -this.eye.z()],
             [0, 0, 0, 1]
         );
         this.translationMatrix = transpose(mat); // transpose to row-major order

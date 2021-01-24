@@ -92,14 +92,8 @@ const vec3 = (x, y, z) => {
 
     if (y === undefined && z === undefined) {
         vec = matrix([x, x, x]);
-        vec.x = x; // this is really bad, fix it later
-        vec.y = x;
-        vec.z = x;
     } else {
         vec = matrix([x, y, z]);
-        vec.x = x;
-        vec.y = y;
-        vec.z = z;
     }
 
     return vec;
@@ -110,19 +104,11 @@ const vec4 = (x, y, z, w) => {
 
     if (y === undefined && z === undefined && w === undefined) {
         vec = matrix([x, x, x, x]);
-        vec.x = x;
-        vec.y = x;
-        vec.z = x;
-        vec.w = x;
     } else if (z === undefined && w === undefined) {
         x.resize([4], y);
         vec = x;
     } else {
         vec = matrix([x, y, z, w]);
-        vec.x = x;
-        vec.y = y;
-        vec.z = z;
-        vec.w = w;
     }
 
     return vec;

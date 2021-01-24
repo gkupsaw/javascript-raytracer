@@ -256,7 +256,7 @@ const parse = (scene) => {
                 for (const attr of camera.children) {
                     switch (attr.tagName) {
                         case tagnames.camera.POS:
-                            cameraData['position'] = extractXYZ(attr);
+                            cameraData['pos'] = extractXYZ(attr);
                             break;
                         case tagnames.camera.UP:
                             cameraData['up'] = extractXYZ(attr);
@@ -271,7 +271,7 @@ const parse = (scene) => {
                 data.camera = cameraData;
                 break;
             case OBJECT:
-                data.object.concat(parseObject(child));
+                data.object = data.object.concat(parseObject(child));
                 break;
             default:
                 console.error(`Unknown root child tag: ${child.tagName}`);

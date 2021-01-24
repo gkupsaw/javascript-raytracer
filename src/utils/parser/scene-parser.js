@@ -24,6 +24,86 @@ const extractRGB = (xmlEl) =>
         xmlEl.getAttribute('b')
     );
 
+const parseGlobal = (global) => {
+    let globalData = {};
+
+    for (const datum of global.children) {
+        let propName, propVal;
+        switch (datum.tagName) {
+            case tagnames.global.DIFFUSE:
+                propName = 'diffuse';
+                propVal = datum.getAttribute('v');
+                break;
+            case tagnames.global.SPECULAR:
+                propName = 'specular';
+                propVal = datum.getAttribute('v');
+                break;
+            case tagnames.global.AMBIENT:
+                propName = 'ambient';
+                propVal = datum.getAttribute('v');
+                break;
+            default:
+                console.error(`Unknown global data tag: ${datum.tagName}`);
+                break;
+        }
+        if (propName) {
+            globalData[propName] = propVal;
+        }
+    }
+
+    return globalData;
+};
+
+const parseCamera = (camera) => {
+    let cameraData = {};
+
+    for (const attr of camera.children) {
+        switch (attr.tagName) {
+            case tagnames.camera.POS:
+                cameraData['pos'] = extractXYZ(attr);
+                break;
+            case tagnames.camera.UP:
+                cameraData['up'] = extractXYZ(attr);
+                break;
+            default:
+                console.error(`Unknown camera data tag: ${attr.tagName}`);
+                break;
+        }
+    }
+
+    return cameraData;
+};
+
+const parseLight = (light) => {
+    let lightData = {};
+
+    for (const attr of light.children) {
+        let propName, propVal;
+        switch (attr.tagName) {
+            case tagnames.light.ID:
+                propName = 'id';
+                propVal = attr.getAttribute('v');
+                break;
+            case tagnames.light.COLOR:
+                propName = 'color';
+                propVal = extractRGB(attr);
+                break;
+            case tagnames.light.POS:
+                propName = 'position';
+                propVal = extractXYZ(attr);
+                break;
+            default:
+                console.error(`Unknown light data tag: ${attr.tagName}`);
+                break;
+        }
+        if (propName) {
+            lightData[propName] = propVal;
+        }
+    }
+
+    return lightData;
+};
+
 const parseObject = (object, transformations = []) => {
     const name = object.getAttribute('name');
     const type = object.getAttribute('type');
@@ -125,81 +205,13 @@ const parse = (scene) => {
     while (child) {
         switch (child.tagName) {
             case GLOBAL:
-                for (const datum of child.children) {
-                    let propName, propVal;
-                    switch (datum.tagName) {
-                        case tagnames.global.DIFFUSE:
-                            propName = 'diffuse';
-                            propVal = datum.getAttribute('v');
-                            break;
-                        case tagnames.global.SPECULAR:
-                            propName = 'specular';
-                            propVal = datum.getAttribute('v');
-                            break;
-                        case tagnames.global.AMBIENT:
-                            propName = 'ambient';
-                            propVal = datum.getAttribute('v');
-                            break;
-                        default:
-                            console.error(
-                                `Unknown global data tag: ${datum.tagName}`
-                            );
-                            break;
-                    }
-                    if (propName) {
-                        data.global[propName] = propVal;
-                    }
-                }
+                data.global = parseGlobal(child);
                 break;
             case LIGHT:
-                const light = child;
-                const lightData = {};
-                for (const attr of light.children) {
-                    let propName, propVal;
-                    switch (attr.tagName) {
-                        case tagnames.light.ID:
-                            propName = 'id';
-                            propVal = attr.getAttribute('v');
-                            break;
-                        case tagnames.light.COLOR:
-                            propName = 'color';
-                            propVal = extractRGB(attr);
-                            break;
-                        case tagnames.light.POS:
-                            propName = 'position';
-                            propVal = extractXYZ(attr);
-                            break;
-                        default:
-                            console.error(
-                                `Unknown light data tag: ${attr.tagName}`
-                            );
-                            break;
-                    }
-                    if (propName) {
-                        data.global[propName] = propVal;
-                    }
-                }
-                data.light.push(lightData);
+                data.light.push(parseLight(child));
                 break;
             case CAMERA:
-                const camera = child;
-                const cameraData = {};
-                for (const attr of camera.children) {
-                    switch (attr.tagName) {
-                        case tagnames.camera.POS:
-                            cameraData['pos'] = extractXYZ(attr);
-                            break;
-                        case tagnames.camera.UP:
-                            cameraData['up'] = extractXYZ(attr);
-                            break;
-                        default:
-                            console.error(
-                                `Unknown camera data tag: ${attr.tagName}`
-                            );
-                            break;
-                    }
-                }
-                data.camera = cameraData;
+                data.camera = parseCamera(child);
                 break;
             case OBJECT:
                 data.object = data.object.concat(parseObject(child));

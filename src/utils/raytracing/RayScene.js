@@ -137,7 +137,6 @@ class RayScene {
                 mat_mul(objectToWorld, ray.eye),
                 mat_mul(objectToWorld, ray.dir)
             );
-            console.log(rayOS);
 
             switch (shape.primitive.type) {
                 case primitiveTypes.CONE:

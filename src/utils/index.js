@@ -44,6 +44,9 @@ const CANVAS = {
 
 const runRaytracer = () => {
     const { global, camera, light, object } = parse(scene);
+
+    CAMERA.orientLook(camera.pos, camera.look, camera.up);
+
     const rayscene = new RayScene(global, light, object);
     rayscene.render(CANVAS, CAMERA);
 };

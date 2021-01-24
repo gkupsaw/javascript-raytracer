@@ -43,14 +43,10 @@ class Camera {
     }
 
     getProjectionMatrix() {
-        console.log(this.perspectiveTransformation);
-        console.log(this.scaleMatrix);
         return mat_mul(this.perspectiveTransformation, this.scaleMatrix);
     }
 
     getViewMatrix() {
-        // console.log(this.rotationMatrix);
-        // console.log(this.translationMatrix);
         return mat_mul(this.rotationMatrix, this.translationMatrix);
     }
 
@@ -94,11 +90,17 @@ class Camera {
         return this.thetaH;
     }
 
-    orientLook(eye, look, up) {
+    orientLook(
+        eye = vec4(2, 2, 2, 1),
+        look = negate(normalize(vec4(2, 2, 2, 0))),
+        up = vec4(0, 1, 0, 0)
+    ) {
         this.eye = eye;
         this.up = normalize(up);
         this.w = normalize(negate(look));
-        this.v = normalize(this.up - mat_mul(this.w, dot(this.up, this.w)));
+        this.v = normalize(
+            mat_add(this.up, negate(mat_mul(this.w, dot(this.up, this.w))))
+        );
         this.u = normalize(vec4(cross(xyz(this.v), xyz(this.w)), 0));
         this.updateViewMatrix();
         this.updateProjectionMatrix();

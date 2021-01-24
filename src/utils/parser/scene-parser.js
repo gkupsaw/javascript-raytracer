@@ -1,12 +1,58 @@
-const vec3 = (x, y, z) => ({ x, y, z, r: x, g: y, b: z });
-const vec4 = (x, y, z, w) => ({ x, y, z, w, r: x, g: y, b: z, a: w });
+// const proxifyVec = (vec) =>
+//     new Proxy(vec, {
+//         get: function (self, prop) {
+//             switch (prop) {
+//                 case 'r':
+//                     return self.x;
+//                 case 'g':
+//                     return self.y;
+//                 case 'b':
+//                     return self.z;
+//                 case 'a':
+//                     return self.w;
+//                 default:
+//                     return Reflect.get(...arguments);
+//             }
+//         },
+//     });
+// vec3 = proxifyVec(vec3);
+// vec4 = proxifyVec(vec4);
+class vec3 {
+    constructor(x, y, z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+    }
+
+    get r() {
+        return this.x;
+    }
+
+    get g() {
+        return this.y;
+    }
+
+    get b() {
+        return this.z;
+    }
+}
+class vec4 extends vec3 {
+    constructor(x, y, z, w) {
+        super(x, y, z);
+        this.w = w;
+    }
+
+    get a() {
+        return this.w;
+    }
+}
 
 const defaultData = {
     global: { ambient: 0.5, diffuse: 0.5, specular: 0.5 },
     camera: {
-        pos: vec4(5, 5, 5, 1),
-        up: vec4(0, 1, 0, 0),
-        look: vec4(-1, -1, -1, 0),
+        pos: new vec4(5, 5, 5, 1),
+        up: new vec4(0, 1, 0, 0),
+        look: new vec4(-1, -1, -1, 0),
         heightAngle: 45,
         aspectRatio: 1,
     },
@@ -55,25 +101,25 @@ const parseObject = (object, transformData = {}) => {
             for (const attr of object.children) {
                 switch (attr.tagName) {
                     case tagnames.object.DIFFUSE:
-                        objectData['diffuse'] = {
-                            r: attr.getAttribute('r'),
-                            g: attr.getAttribute('g'),
-                            b: attr.getAttribute('b'),
-                        };
+                        objectData['diffuse'] = new vec3(
+                            attr.getAttribute('r'),
+                            attr.getAttribute('g'),
+                            attr.getAttribute('b')
+                        );
                         break;
                     case tagnames.object.SPECULAR:
-                        objectData['specular'] = {
-                            r: attr.getAttribute('r'),
-                            g: attr.getAttribute('g'),
-                            b: attr.getAttribute('b'),
-                        };
+                        objectData['specular'] = new vec3(
+                            attr.getAttribute('r'),
+                            attr.getAttribute('g'),
+                            attr.getAttribute('b')
+                        );
                         break;
                     case tagnames.object.AMBIENT:
-                        objectData['ambient'] = {
-                            r: attr.getAttribute('r'),
-                            g: attr.getAttribute('g'),
-                            b: attr.getAttribute('b'),
-                        };
+                        objectData['ambient'] = new vec3(
+                            attr.getAttribute('r'),
+                            attr.getAttribute('g'),
+                            attr.getAttribute('b')
+                        );
                         break;
                     default:
                         console.error(
@@ -181,14 +227,14 @@ const parse = (scene) => {
                     lightData['id'] = attr.getAttribute('v');
                     break;
                 case tagnames.light.COLOR:
-                    lightData['color'] = vec3(
+                    lightData['color'] = new vec3(
                         attr.getAttribute('r'),
                         attr.getAttribute('g'),
                         attr.getAttribute('b')
                     );
                     break;
                 case tagnames.light.POS:
-                    lightData['position'] = vec3(
+                    lightData['position'] = new vec3(
                         attr.getAttribute('x'),
                         attr.getAttribute('y'),
                         attr.getAttribute('z')
@@ -207,18 +253,18 @@ const parse = (scene) => {
         for (const attr of camera.children) {
             switch (attr.tagName) {
                 case tagnames.camera.POS:
-                    cameraData['position'] = {
-                        x: attr.getAttribute('x'),
-                        y: attr.getAttribute('y'),
-                        z: attr.getAttribute('z'),
-                    };
+                    cameraData['position'] = new vec3(
+                        attr.getAttribute('x'),
+                        attr.getAttribute('y'),
+                        attr.getAttribute('z')
+                    );
                     break;
                 case tagnames.camera.UP:
-                    cameraData['up'] = {
-                        x: attr.getAttribute('x'),
-                        y: attr.getAttribute('y'),
-                        z: attr.getAttribute('z'),
-                    };
+                    cameraData['up'] = new vec3(
+                        attr.getAttribute('x'),
+                        attr.getAttribute('y'),
+                        attr.getAttribute('z')
+                    );
                     break;
                 default:
                     console.error(`Unknown camera data tag: ${attr.tagName}`);

@@ -17,6 +17,8 @@ import {
 } from './LightingUtils';
 import * as ImplicitShapes from './ImplicitShapes';
 
+//add light functions
+
 const MAX_DEPTH = 4;
 const mat_inv = () => {};
 const mat_transpose = () => {};

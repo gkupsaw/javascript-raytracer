@@ -1,37 +1,31 @@
-#include "ImplicitShapes.h"
+import { vec4, dot, normalize, IntersectionData, Ray } from '../lib';
 
-float EPSILON_RAY = 1e-5;
+const EPSILON_RAY = 1e-5;
 
-ImplicitShapes::ImplicitShapes()
-{
-}
-
-ImplicitShapes::~ImplicitShapes()
-{
-}
-
-
-float ImplicitShapes::implicitTrunk(const Ray &ray, float a, float b, float c, float top, float bottom) {
-    float minT = INFINITY;
-    float discriminant = pow(b, 2) - 4.f * a * c;
-    glm::vec4 p = ray.eye;
-    glm::vec4 d = ray.dir;
+const implicitTrunk = (ray, a, b, c, top, bottom) => {
+    let minT = Infinity;
+    const discriminant = Math.pow(b, 2) - 4 * a * c;
+    const p = ray.eye;
+    const d = ray.dir;
 
     if (discriminant >= 0 && a != 0) {
-        float denom = 2.f * a;
-        float sqrtDiscr = sqrt(discriminant);
+        const denom = 2 * a;
+        const sqrtDiscr = Math.sqrt(discriminant);
 
-        float t1 = (-b + sqrtDiscr) / denom;
+        const t1 = (-b + sqrtDiscr) / denom;
         if (t1 >= 0) {
-            glm::vec4 intersectPoint1 = p + d * t1;
-            if (intersectPoint1.y >= bottom - EPSILON_RAY && intersectPoint1.y <= top + EPSILON_RAY) {
+            const intersectPoint1 = p + d * t1;
+            if (
+                intersectPoint1.y >= bottom - EPSILON_RAY &&
+                intersectPoint1.y <= top + EPSILON_RAY
+            ) {
                 minT = t1;
             }
         }
 
-        float t2 = (-b - sqrtDiscr) / denom;
+        const t2 = (-b - sqrtDiscr) / denom;
         if (t2 >= 0 && t2 < minT) {
-            glm::vec4 intersectPoint2 = p + d * t2;
+            const intersectPoint2 = p + d * t2;
             if (intersectPoint2.y >= bottom && intersectPoint2.y <= top) {
                 minT = t2;
             }
@@ -39,137 +33,183 @@ float ImplicitShapes::implicitTrunk(const Ray &ray, float a, float b, float c, f
     }
 
     return minT;
-}
+};
 
-float ImplicitShapes::implicitPlane(const Ray &ray, const Ray &planeNormal) {
-    float denom = glm::dot(planeNormal.dir, ray.dir);
-    if (fabs(denom) <= EPSILON_RAY) {
-        return INFINITY;
+const implicitPlane = (ray, planeNormal) => {
+    const denom = dot(planeNormal.dir, ray.dir);
+    if (Math.abs(denom) <= EPSILON_RAY) {
+        return Infinity;
     }
-    float t = glm::dot(planeNormal.dir, planeNormal.eye - ray.eye) / denom;
-    return t >= EPSILON_RAY ? t : INFINITY;
-}
+    const t = dot(planeNormal.dir, planeNormal.eye - ray.eye) / denom;
+    return t >= EPSILON_RAY ? t : Infinity;
+};
 
-IntersectionData ImplicitShapes::implicitCone(const Ray &ray) {
-    IntersectionData intersection;
-    glm::vec4 p = ray.eye;
-    glm::vec4 d = ray.dir;
+const implicitCone = (ray) => {
+    let intersection;
+    const p = ray.eye;
+    const d = ray.dir;
 
-    float top = 0.5f;
-    float bottom = -0.5f;
-    float m = 2;
-    float bottomR = (top - bottom) / m;
+    const top = 0.5;
+    const bottom = -0.5;
+    const m = 2;
+    const bottomR = (top - bottom) / m;
 
-    float a = pow(d.x, 2) + pow(d.z, 2) - (pow(d.y, 2) / 4.f);
-    float b = (2.f * p.x * d.x) + (2.f * p.z * d.z) - (p.y * d.y / 2.f) + (d.y / 4.f);
-    float c = pow(p.x, 2) + pow(p.z, 2) - (pow(p.y, 2) / 4.f) + (p.y / 4.f) - pow(top / m, 2);
+    const a = Math.pow(d.x, 2) + Math.pow(d.z, 2) - Math.pow(d.y, 2) / 4;
+    const b = 2 * p.x * d.x + 2 * p.z * d.z - (p.y * d.y) / 2 + d.y / 4;
+    const c =
+        Math.pow(p.x, 2) +
+        Math.pow(p.z, 2) -
+        Math.pow(p.y, 2) / 4 +
+        p.y / 4 -
+        Math.pow(top / m, 2);
 
-    float trunkT = implicitTrunk(ray, a, b, c);
-    glm::vec4 intersectionPoint1 = p + d * trunkT;
-    glm::vec4 normalAtIntersection = glm::normalize(glm::vec4(2.f * intersectionPoint1.x, (0.5f - intersectionPoint1.y) / 2.f, 2.f * intersectionPoint1.z, 0));
-    intersection = { normalAtIntersection, trunkT };
+    const trunkT = implicitTrunk(ray, a, b, c);
+    const intersectionPoint1 = p + d * trunkT;
+    const normalAtIntersection = normalize(
+        new vec4(
+            2 * intersectionPoint1.x,
+            (0.5 - intersectionPoint1.y) / 2,
+            2 * intersectionPoint1.z,
+            0
+        )
+    );
+    intersection = new IntersectionData(normalAtIntersection, trunkT);
 
-    Ray bottomCapNormal = { glm::vec4(0, bottom, 0, 1.f), glm::vec4(0, -1.f, 0, 0) };
-    float t3 = implicitPlane(ray, bottomCapNormal);
+    const bottomCapNormal = new Ray(
+        new vec4(0, bottom, 0, 1),
+        new vec4(0, -1, 0, 0)
+    );
+    const t3 = implicitPlane(ray, bottomCapNormal);
     if (t3 < intersection.t) {
-        glm::vec4 intersectionPoint2 = p + d * t3;
-        if (pow(intersectionPoint2.x, 2) + pow(intersectionPoint2.z, 2) <= pow(bottomR, 2)) {
-            intersection = { bottomCapNormal.dir, t3 };
+        const intersectionPoint2 = p + d * t3;
+        if (
+            Math.pow(intersectionPoint2.x, 2) +
+                Math.pow(intersectionPoint2.z, 2) <=
+            Math.pow(bottomR, 2)
+        ) {
+            intersection = new IntersectionData(bottomCapNormal.dir, t3);
         }
     }
 
     return intersection;
-}
+};
 
-IntersectionData ImplicitShapes::implicitCylinder(const Ray &ray) {
-    IntersectionData intersection;
-    glm::vec4 p = ray.eye;
-    glm::vec4 d = ray.dir;
+const implicitCylinder = (ray) => {
+    let intersection;
+    const p = ray.eye;
+    const d = ray.dir;
 
-    float top = 0.5f;
-    float bottom = -0.5f;
-    float r = 0.5f;
+    const top = 0.5;
+    const bottom = -0.5;
+    const r = 0.5;
 
-    float a = pow(d.x, 2) + pow(d.z, 2);
-    float b = (2 * p.x * d.x) + (2 * p.z * d.z);
-    float c = pow(p.x, 2) + pow(p.z, 2) - pow(r, 2);
+    const a = Math.pow(d.x, 2) + Math.pow(d.z, 2);
+    const b = 2 * p.x * d.x + 2 * p.z * d.z;
+    const c = Math.pow(p.x, 2) + Math.pow(p.z, 2) - Math.pow(r, 2);
 
-    float trunkT = implicitTrunk(ray, a, b, c);
-    glm::vec4 intersectionPoint1 = p + d * trunkT;
-    glm::vec4 intersectionNormal = glm::normalize(glm::vec4(intersectionPoint1.x * 2.f, 0, intersectionPoint1.z * 2.f, 0));
+    const trunkT = implicitTrunk(ray, a, b, c);
+    const intersectionPoint1 = p + d * trunkT;
+    const intersectionNormal = normalize(
+        new vec4(intersectionPoint1.x * 2, 0, intersectionPoint1.z * 2, 0)
+    );
 
-    intersection = { intersectionNormal, trunkT };
+    intersection = new IntersectionData(intersectionNormal, trunkT);
 
-    Ray bottomCapNormal = { glm::vec4(0, bottom, 0, 1.f), glm::vec4(0, -1.f, 0, 0) };
-    float t3 = implicitPlane(ray, bottomCapNormal);
+    const bottomCapNormal = new Ray(
+        new vec4(0, bottom, 0, 1),
+        new vec4(0, -1, 0, 0)
+    );
+    const t3 = implicitPlane(ray, bottomCapNormal);
     if (t3 < intersection.t) {
-        glm::vec4 intersectionPoint2 = p + d * t3;
-        if (pow(intersectionPoint2.x, 2) + pow(intersectionPoint2.z, 2) <= pow(r, 2)) {
-            intersection = { bottomCapNormal.dir, t3 };
+        const intersectionPoint2 = p + d * t3;
+        if (
+            Math.pow(intersectionPoint2.x, 2) +
+                Math.pow(intersectionPoint2.z, 2) <=
+            Math.pow(r, 2)
+        ) {
+            intersection = new IntersectionData(bottomCapNormal.dir, t3);
         }
     }
 
-    Ray topCapNormal = { glm::vec4(0, top, 0, 1.f), glm::vec4(0, 1.f, 0, 0) };
-    float t4 = implicitPlane(ray, topCapNormal);
+    const topCapNormal = new Ray(new vec4(0, top, 0, 1), new vec4(0, 1, 0, 0));
+    const t4 = implicitPlane(ray, topCapNormal);
     if (t4 < intersection.t) {
-        glm::vec4 intersectionPoint3 = p + d * t4;
-        if (pow(intersectionPoint3.x, 2) + pow(intersectionPoint3.z, 2) <= pow(r, 2)) {
-            intersection = { topCapNormal.dir, t4 };
+        const intersectionPoint3 = p + d * t4;
+        if (
+            Math.pow(intersectionPoint3.x, 2) +
+                Math.pow(intersectionPoint3.z, 2) <=
+            Math.pow(r, 2)
+        ) {
+            intersection = new IntersectionData(topCapNormal.dir, t4);
         }
     }
 
     return intersection;
-}
+};
 
-IntersectionData ImplicitShapes::implicitCube(const Ray &ray) {
-    IntersectionData intersection;
-    float r = 0.5f;
-    glm::vec4 p = ray.eye;
-    glm::vec4 d = ray.dir;
+const implicitCube = (ray) => {
+    let intersection;
+    const r = 0.5;
+    const p = ray.eye;
+    const d = ray.dir;
 
-    std::vector<glm::vec4> normals = {
-        {  1,  0,  0, 0 },
-        { -1,  0,  0, 0 },
-        {  0,  1,  0, 0 },
-        {  0, -1,  0, 0 },
-        {  0,  0,  1, 0 },
-        {  0,  0, -1, 0 },
-    };
+    const normals = [
+        new vec4(1, 0, 0, 0),
+        new vec4(-1, 0, 0, 0),
+        new vec4(0, 1, 0, 0),
+        new vec4(0, -1, 0, 0),
+        new vec4(0, 0, 1, 0),
+        new vec4(0, 0, -1, 0),
+    ];
 
-    float t;
-    float limit = r + EPSILON_RAY;
-    for (glm::vec4 normal : normals) {
-        Ray faceRay = { glm::vec4(normal.xyz() * r, 1.f), normal };
+    let t;
+    const limit = r + EPSILON_RAY;
+    for (const normal of normals) {
+        const faceRay = new Ray(new vec4(normal.xyz() * r, 1), normal);
         t = implicitPlane(ray, faceRay);
         if (t < intersection.t) {
-            glm::vec4 pointOnShape = p + d * t;
-            if (pointOnShape.x >= -limit && pointOnShape.x <= limit
-                    && pointOnShape.y >= -limit && pointOnShape.y <= limit
-                    && pointOnShape.z >= -limit && pointOnShape.z <= limit) {
-                intersection = { normal, t };
+            const pointOnShape = p + d * t;
+            if (
+                pointOnShape.x >= -limit &&
+                pointOnShape.x <= limit &&
+                pointOnShape.y >= -limit &&
+                pointOnShape.y <= limit &&
+                pointOnShape.z >= -limit &&
+                pointOnShape.z <= limit
+            ) {
+                intersection = new IntersectionData(normal, t);
             }
         }
     }
 
     return intersection;
-}
+};
 
-IntersectionData ImplicitShapes::implicitSphere(const Ray &ray) {
-    IntersectionData intersection;
-    float r = 0.5f;
-    glm::vec4 p = ray.eye;
-    glm::vec4 d = ray.dir;
+const implicitSphere = (ray) => {
+    let intersection;
+    const r = 0.5;
+    const p = ray.eye;
+    const d = ray.dir;
 
+    const a = Math.pow(d.x, 2) + Math.pow(d.z, 2) + Math.pow(d.y, 2);
+    const b = 2 * p.x * d.x + 2 * p.z * d.z + 2 * p.y * d.y;
+    const c =
+        Math.pow(p.x, 2) + Math.pow(p.z, 2) + Math.pow(p.y, 2) - Math.pow(r, 2);
 
-    float a = pow(d.x, 2) + pow(d.z, 2) + pow(d.y, 2);
-    float b = (2.f * p.x * d.x) + (2.f * p.z * d.z) + (2.f * p.y * d.y);
-    float c = pow(p.x, 2) + pow(p.z, 2) + pow(p.y, 2) - pow(r, 2);
+    const minT = implicitTrunk(ray, a, b, c);
 
-    float minT = implicitTrunk(ray, a, b, c);
-
-    glm::vec4 IntersectionData = p + d * minT;
-    glm::vec4 intersectionNormal = glm::vec4(2.f * IntersectionData.xyz(), 0.f);
-    intersection = { intersectionNormal, minT };
+    const intersectionDir = p + d * minT;
+    const intersectionNormal = new vec4(2 * intersectionDir.xyz(), 0);
+    intersection = new IntersectionData(intersectionNormal, minT);
 
     return intersection;
-}
+};
+
+export {
+    implicitTrunk,
+    implicitCone,
+    implicitCube,
+    implicitCylinder,
+    implicitPlane,
+    implicitSphere,
+};

@@ -1,5 +1,3 @@
-import { null } from 'mathjs';
-
 const proxifyVec = (vec) =>
     new Proxy(vec, {
         get: function (self, prop) {
@@ -59,6 +57,8 @@ class vec4 extends vec3 {
     get a() {
         return this.w;
     }
+
+    xyz = () => new vec3(this.x, this.y, this.z);
 }
 
 class mat3 {
@@ -124,6 +124,8 @@ const primitiveTypes = {
 
 const lightTypes = { POINT: 'POINT', DIRECTIONAL: 'DIRECTIONAL' };
 
+const clamp = (val, min, max) => Math.max(Math.min(val, max), min);
+
 const unused = { proxifyVec, vec3Obj, vec4Obj };
 export {
     vec3,
@@ -135,5 +137,6 @@ export {
     IntersectionData,
     primitiveTypes,
     lightTypes,
+    clamp,
     unused,
 };

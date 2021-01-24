@@ -1,6 +1,7 @@
 import logo from './assets/logo.svg';
 import './css/App.css';
 import { runRaytracer } from './utils';
+import { RayScene } from './utils/raytracing/RayScene';
 
 function App() {
     return (

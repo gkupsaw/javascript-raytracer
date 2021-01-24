@@ -1,11 +1,19 @@
-import { vec4, RGBA, Ray, IntersectionData, primitiveTypes } from '../lib';
+import {
+    vec4,
+    mat3,
+    RGBA,
+    Ray,
+    IntersectionData,
+    primitiveTypes,
+    lightTypes,
+    clamp,
+} from '../lib';
 
 const MAX_DEPTH = 4;
 const mat_inv = () => {};
 const mat_transpose = () => {};
 const mat_mul = () => {};
 const vec_normalize = () => {};
-const clamp = () => {};
 
 const processEvents = () => {};
 
@@ -16,24 +24,36 @@ const computeDiffuse = () => {};
 const computeSpecular = () => {};
 const reflectRay = () => {};
 
-const mat3 = () => {};
+const CAMERA = {
+    getScaleMatrix: () => {},
+    getViewMatrix: () => {},
+};
+
+const CANVAS = {
+    data: () => {},
+    height: () => 0,
+    width: () => 0,
+    update: () => {},
+};
 
 const settings = {};
 
 class RayScene {
     constructor() {
-        this.implicitShapes = ImplicitShapes();
+        this.implicitShapes = {};
+        // this.implicitShapes = ImplicitShapes();
         this.halt = false;
+        this.global = {};
         this.shapes = [];
         this.lights = [];
     }
 
     cancel = () => {
-        this.m_halt = true;
+        this.halt = true;
     };
 
     render = (canvas, camera) => {
-        this.m_halt = false;
+        this.halt = false;
 
         const height = canvas.height();
 
@@ -45,13 +65,13 @@ class RayScene {
 
         let y;
         for (y = 0; y < yMax; y++) {
-            renderRow(canvas, y, filmToWorld, pEye);
-            if (m_halt) {
+            this.renderRow(canvas, y, filmToWorld, pEye);
+            if (this.halt) {
                 break;
             }
         }
 
-        this.m_halt = false;
+        this.halt = false;
     };
 
     renderRow = (canvas, y, filmToWorld, pEye) => {
@@ -78,7 +98,7 @@ class RayScene {
             // calculate lighting at that point
 
             const initialDepth = 0;
-            const pixelIntersection = computeIntersection(ray);
+            const pixelIntersection = this.computeIntersection(ray);
 
             // no intersection
             if (pixelIntersection.t === Infinity) {
@@ -87,7 +107,7 @@ class RayScene {
                 const wscIntersectionPoint =
                     ray.eye + ray.dir * pixelIntersection.t;
 
-                let pixelIntensity = computeIntensity(
+                let pixelIntensity = this.computeIntensity(
                     initialDepth,
                     ray.dir,
                     pixelIntersection,
@@ -120,16 +140,20 @@ class RayScene {
 
             switch (shape.primitive.type) {
                 case primitiveTypes.CONE:
-                    currIntersection = m_implicitUtils.implicitCone(rayOS);
+                    currIntersection = this.implicitShapes.implicitCone(rayOS);
                     break;
                 case primitiveTypes.CYLINDER:
-                    currIntersection = m_implicitUtils.implicitCylinder(rayOS);
+                    currIntersection = this.implicitShapes.implicitCylinder(
+                        rayOS
+                    );
                     break;
                 case primitiveTypes.CUBE:
-                    currIntersection = m_implicitUtils.implicitCube(rayOS);
+                    currIntersection = this.implicitShapes.implicitCube(rayOS);
                     break;
                 case primitiveTypes.SPHERE:
-                    currIntersection = m_implicitUtils.implicitSphere(rayOS);
+                    currIntersection = this.implicitShapes.implicitSphere(
+                        rayOS
+                    );
                     break;
                 default:
                     currIntersection = new IntersectionData();
@@ -158,16 +182,16 @@ class RayScene {
         const EPSILON = 1e-2;
         const shape = oscIntersection.shape;
         const mat = shape.primitive.material;
-        const ambientIntensity = m_global.ka * mat.cAmbient;
-        let diffuseIntensity = m_global.kd * mat.cDiffuse;
-        const specularIntensity = m_global.ks * mat.cSpecular;
-        const recursiveIntensity = m_global.ks * mat.cReflective;
+        const ambientIntensity = this.global.ka * mat.cAmbient;
+        let diffuseIntensity = this.global.kd * mat.cDiffuse;
+        const specularIntensity = this.global.ks * mat.cSpecular;
+        const recursiveIntensity = this.global.ks * mat.cReflective;
         const V = vec_normalize(-wscRayDir); // normalized wsc line of sight
         const shininess = mat.shininess;
 
         let lightSummation = new vec4(0);
         const objectNormalToWorld = mat_transpose(
-            mat3(shape.inverseTransformation)
+            new mat3(shape.inverseTransformation)
         );
         const N = vec_normalize(
             new vec4(objectNormalToWorld * oscIntersection.normal.xyz(), 0)
@@ -187,28 +211,23 @@ class RayScene {
             let L = new vec4(0);
 
             switch (light.type) {
-                case lightTypes.LIGHT_POINT: {
+                case lightTypes.LIGHT_POINT:
                     if (!settings.usePointLights) {
                         continue;
                     }
 
                     // from point TO light
                     L = vec_normalize(light.pos - wscIntersectionPoint);
-
                     break;
-                }
-                case lightTypes.LIGHT_DIRECTIONAL: {
+                case lightTypes.LIGHT_DIRECTIONAL:
                     if (!settings.useDirectionalLights) {
                         continue;
                     }
 
                     L = vec_normalize(-light.dir);
-
                     break;
-                }
-                default: {
+                default:
                     break;
-                }
             }
 
             let isOccluded = false;
@@ -217,22 +236,24 @@ class RayScene {
                 // need to offset to account for self-intersection
                 const offsetShadowSource = wscIntersectionPoint + N * EPSILON;
                 const rayToLight = new Ray(offsetShadowSource, L);
-                const shadowRayIntersection = computeIntersection(rayToLight);
+                const shadowRayIntersection = this.computeIntersection(
+                    rayToLight
+                );
 
                 // only count intersections up to the light, and not past
                 // (only applicable for lights with position)
                 let tToLight = Infinity;
-                if (light.type != lightTypes.LIGHT_DIRECTIONAL) {
+                if (light.type !== lightTypes.LIGHT_DIRECTIONAL) {
                     // compute t for intersection with of ray from point to light
                     // and a plane at the light source pointing towards the point
-                    tToLight = m_implicitUtils.implicitPlane(
+                    tToLight = this.implicitShapes.implicitPlane(
                         rayToLight,
                         new Ray(light.pos, -L)
                     );
                 }
 
                 if (
-                    shadowRayIntersection.t != Infinity &&
+                    shadowRayIntersection.t !== Infinity &&
                     shadowRayIntersection.t < tToLight
                 ) {
                     isOccluded = true;
@@ -278,14 +299,14 @@ class RayScene {
             const R = vec_normalize(reflectRay(-wscRayDir, N));
             const offsetReflectionSource = wscIntersectionPoint + R * EPSILON;
             const nextRay = new Ray(offsetReflectionSource, R);
-            const nextIntersection = computeIntersection(nextRay);
+            const nextIntersection = this.computeIntersection(nextRay);
 
-            if (nextIntersection.t != Infinity) {
+            if (nextIntersection.t !== Infinity) {
                 const nextIntersectionPoint =
                     nextRay.eye + nextRay.dir * nextIntersection.t;
                 recursiveComponent =
                     recursiveIntensity *
-                    computeIntensity(
+                    this.computeIntensity(
                         depth + 1,
                         nextRay.dir,
                         nextIntersection,

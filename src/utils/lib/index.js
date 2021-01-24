@@ -1,3 +1,5 @@
+import { null } from 'mathjs';
+
 const proxifyVec = (vec) =>
     new Proxy(vec, {
         get: function (self, prop) {
@@ -59,6 +61,27 @@ class vec4 extends vec3 {
     }
 }
 
+class mat3 {
+    constructor(row1, row2, row3) {
+        if (Array.isArray(row1)) {
+            if (Array.isArray(row2)) {
+                this.mat = [row1, row2, row3];
+            } else {
+                this.mat = [row1, row1, row1];
+            }
+        } else {
+            const singleVal = row1;
+            for (let i = 0; i < 3; i++) {
+                let row = [];
+                for (let j = 0; j < 3; j++) {
+                    row.push(singleVal);
+                }
+                this.mat.push(row);
+            }
+        }
+    }
+}
+
 class RGBA {
     constructor(r, g, b, a) {
         this.r = r;
@@ -75,8 +98,21 @@ class Ray {
     }
 }
 
+class ShapeData {
+    constructor(primitive, transformation, inverseTransformation, texture) {
+        this.primitive = primitive;
+        this.transformation = transformation;
+        this.inverseTransformation = inverseTransformation;
+        this.texture = texture;
+    }
+}
+
 class IntersectionData {
-    constructor() {}
+    constructor(normal, t, shape) {
+        this.normal = normal;
+        this.t = t ?? Infinity;
+        this.shape = shape ?? new ShapeData();
+    }
 }
 
 const primitiveTypes = {
@@ -92,8 +128,10 @@ const unused = { proxifyVec, vec3Obj, vec4Obj };
 export {
     vec3,
     vec4,
+    mat3,
     RGBA,
     Ray,
+    ShapeData,
     IntersectionData,
     primitiveTypes,
     lightTypes,

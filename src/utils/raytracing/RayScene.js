@@ -300,3 +300,5 @@ class RayScene {
         return final;
     };
 }
+
+export { RayScene };

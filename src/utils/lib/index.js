@@ -66,6 +66,17 @@ class vec3 {
         }
     }
 
+    add = (vec) => {
+        if (vec.dim === 3) {
+            return new vec3(this.x + vec.x, this.y + vec.y, this.z + vec.z);
+        } else if (!isNaN(vec)) {
+            const val = vec;
+            return new vec3(this.x + val, this.y + val, this.z + val);
+        }
+        console.error('Bad val to vec3 add');
+        return vec;
+    };
+
     multiply = (vec) => {
         if (vec.dim === 3) {
             return new vec3(this.x * vec.x, this.y * vec.y, this.z * vec.z);
@@ -120,6 +131,27 @@ class vec4 extends vec3 {
             );
         }
         console.error('Bad val to vec4 multiply');
+        return vec;
+    };
+
+    add = (vec) => {
+        if (vec.dim === 4) {
+            return new vec4(
+                this.x + vec.x,
+                this.y + vec.y,
+                this.z + vec.z,
+                this.w + vec.w
+            );
+        } else if (!isNaN(vec)) {
+            const val = vec;
+            return new vec4(
+                this.x + val,
+                this.y + val,
+                this.z + val,
+                this.w + val
+            );
+        }
+        console.error('Bad val to vec4 add');
         return vec;
     };
 

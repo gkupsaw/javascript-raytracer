@@ -89,37 +89,39 @@ const tagnames = {
 };
 let instantiatedObjects = {}; // TODO: make this non-global
 
-const parseObject = (object, transformData = {}) => {
+const extractXYZ = (xmlEl) =>
+    new vec3(
+        xmlEl.getAttribute('x'),
+        xmlEl.getAttribute('y'),
+        xmlEl.getAttribute('z')
+    );
+const extractRGB = (xmlEl) =>
+    new vec3(
+        xmlEl.getAttribute('r'),
+        xmlEl.getAttribute('g'),
+        xmlEl.getAttribute('b')
+    );
+
+const parseObject = (object, transformations = []) => {
     const name = object.getAttribute('name');
     const type = object.getAttribute('type');
     let objects = [];
 
     switch (type) {
         case 'primitive':
-            let objectData = { type, name };
+            let objectData = { type, name, transformations };
 
             for (const attr of object.children) {
                 switch (attr.tagName) {
                     case tagnames.object.DIFFUSE:
-                        objectData['diffuse'] = new vec3(
-                            attr.getAttribute('r'),
-                            attr.getAttribute('g'),
-                            attr.getAttribute('b')
-                        );
+                        objectData['diffuse'] = extractRGB(attr);
                         break;
                     case tagnames.object.SPECULAR:
-                        objectData['specular'] = new vec3(
-                            attr.getAttribute('r'),
-                            attr.getAttribute('g'),
-                            attr.getAttribute('b')
-                        );
+                        objectData['specular'] = extractRGB(attr);
+
                         break;
                     case tagnames.object.AMBIENT:
-                        objectData['ambient'] = new vec3(
-                            attr.getAttribute('r'),
-                            attr.getAttribute('g'),
-                            attr.getAttribute('b')
-                        );
+                        objectData['ambient'] = extractRGB(attr);
                         break;
                     default:
                         console.error(
@@ -139,34 +141,30 @@ const parseObject = (object, transformData = {}) => {
             for (const attr of object.children) {
                 switch (attr.tagName) {
                     case tagnames.object.TRANSBLOCK:
-                        for (const transform of attr.children) {
-                            switch (transform.tagName) {
-                                case tagnames.transform.TRANSLATE:
-                                    transformData['translate'] = {
-                                        x: attr.getAttribute('x'),
-                                        y: attr.getAttribute('y'),
-                                        z: attr.getAttribute('z'),
-                                    };
+                        for (const treeChild of attr.children) {
+                            switch (treeChild.tagName) {
+                                case tagnames.treeChild.TRANSLATE:
+                                case tagnames.treeChild.ROTATE:
+                                case tagnames.treeChild.SCALE:
+                                    transformations.push({
+                                        type: treeChild.tagName,
+                                        vec: extractXYZ(treeChild),
+                                    });
                                     break;
-                                case tagnames.transform.ROTATE:
-                                    transformData['rotate'] = {
-                                        x: attr.getAttribute('x'),
-                                        y: attr.getAttribute('y'),
-                                        z: attr.getAttribute('z'),
-                                    };
+                                case 'object':
+                                    objects.push(
+                                        parseObject(treeChild, transformations)
+                                    );
                                     break;
-                                case tagnames.transform.SCALE:
-                                    transformData['scale'] = {
-                                        x: attr.getAttribute('x'),
-                                        y: attr.getAttribute('y'),
-                                        z: attr.getAttribute('z'),
-                                    };
-                                    break;
+                                default:
+                                    console.error(
+                                        `Unknown treeChild data tag: ${treeChild.tagName}`
+                                    );
                             }
                         }
                         break;
                     case 'object':
-                        objects.push(parseObject(attr, transformData));
+                        objects.push(parseObject(attr, transformations));
                         break;
                     default:
                         console.error(
@@ -193,89 +191,89 @@ const parse = (scene) => {
 
     let data = { ...defaultData };
 
-    const globaldata = xmlDoc.getElementsByTagName('globaldata');
-    const lights = xmlDoc.getElementsByTagName('lightdata');
-    const cameras = xmlDoc.getElementsByTagName('cameradata');
-    const objects = xmlDoc.getElementsByTagName('object');
+    const scenefile = xmlDoc.getElementsByTagName('scenefile')[0];
 
-    if (globaldata.length > 1) {
-        console.error('Multiple global data given. Last one will be used.');
-    }
+    // if (scenefiledata.length !== 1) {
+    //     console.error(
+    //         'No or too many scenefiles in one file. Using first if it exists.'
+    //     );
+    // }
 
-    for (const datum of globaldata[globaldata.length - 1].children) {
-        switch (datum.tagName) {
-            case tagnames.global.DIFFUSE:
-                data.global['diffuse'] = datum.getAttribute('v');
+    let child = scenefile.firstElementChild;
+    while (child) {
+        switch (child.tagName) {
+            case 'globaldata':
+                for (const datum of child.children) {
+                    switch (datum.tagName) {
+                        case tagnames.global.DIFFUSE:
+                            data.global['diffuse'] = datum.getAttribute('v');
+                            break;
+                        case tagnames.global.SPECULAR:
+                            data.global['specular'] = datum.getAttribute('v');
+                            break;
+                        case tagnames.global.AMBIENT:
+                            data.global['ambient'] = datum.getAttribute('v');
+                            break;
+                        default:
+                            console.error(
+                                `Unknown global data tag: ${datum.tagName}`
+                            );
+                            break;
+                    }
+                }
                 break;
-            case tagnames.global.SPECULAR:
-                data.global['specular'] = datum.getAttribute('v');
+            case 'lightdata':
+                const light = child;
+                const lightData = {};
+                for (const attr of light.children) {
+                    switch (attr.tagName) {
+                        case tagnames.light.ID:
+                            lightData['id'] = attr.getAttribute('v');
+                            break;
+                        case tagnames.light.COLOR:
+                            lightData['color'] = extractRGB(attr);
+                            break;
+                        case tagnames.light.POS:
+                            lightData['position'] = extractXYZ(attr);
+                            break;
+                        default:
+                            console.error(
+                                `Unknown light data tag: ${attr.tagName}`
+                            );
+                            break;
+                    }
+                }
+                data.light.push(lightData);
                 break;
-            case tagnames.global.AMBIENT:
-                data.global['ambient'] = datum.getAttribute('v');
+            case 'cameradata':
+                const camera = child;
+                const cameraData = {};
+                for (const attr of camera.children) {
+                    switch (attr.tagName) {
+                        case tagnames.camera.POS:
+                            cameraData['position'] = extractXYZ(attr);
+                            break;
+                        case tagnames.camera.UP:
+                            cameraData['up'] = extractXYZ(attr);
+                            break;
+                        default:
+                            console.error(
+                                `Unknown camera data tag: ${attr.tagName}`
+                            );
+                            break;
+                    }
+                }
+                data.camera = cameraData;
+                break;
+            case 'object':
+                data.object.concat(parseObject(child));
                 break;
             default:
-                console.error(`Unknown global data tag: ${datum.tagName}`);
+                console.error(`Unknown root child tag: ${child.tagName}`);
                 break;
         }
-    }
 
-    for (const light of lights) {
-        const lightData = {};
-        for (const attr of light.children) {
-            switch (attr.tagName) {
-                case tagnames.light.ID:
-                    lightData['id'] = attr.getAttribute('v');
-                    break;
-                case tagnames.light.COLOR:
-                    lightData['color'] = new vec3(
-                        attr.getAttribute('r'),
-                        attr.getAttribute('g'),
-                        attr.getAttribute('b')
-                    );
-                    break;
-                case tagnames.light.POS:
-                    lightData['position'] = new vec3(
-                        attr.getAttribute('x'),
-                        attr.getAttribute('y'),
-                        attr.getAttribute('z')
-                    );
-                    break;
-                default:
-                    console.error(`Unknown light data tag: ${attr.tagName}`);
-                    break;
-            }
-        }
-        data.light.push(lightData);
-    }
-
-    for (const camera of cameras) {
-        const cameraData = {};
-        for (const attr of camera.children) {
-            switch (attr.tagName) {
-                case tagnames.camera.POS:
-                    cameraData['position'] = new vec3(
-                        attr.getAttribute('x'),
-                        attr.getAttribute('y'),
-                        attr.getAttribute('z')
-                    );
-                    break;
-                case tagnames.camera.UP:
-                    cameraData['up'] = new vec3(
-                        attr.getAttribute('x'),
-                        attr.getAttribute('y'),
-                        attr.getAttribute('z')
-                    );
-                    break;
-                default:
-                    console.error(`Unknown camera data tag: ${attr.tagName}`);
-                    break;
-            }
-        }
-        data.camera = cameraData;
-    }
-
-    for (const object of objects) {
-        data.object.concat(parseObject(object));
+        child = child.nextElementSibling;
     }
 
     return data;

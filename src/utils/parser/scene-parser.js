@@ -1,97 +1,14 @@
-// const proxifyVec = (vec) =>
-//     new Proxy(vec, {
-//         get: function (self, prop) {
-//             switch (prop) {
-//                 case 'r':
-//                     return self.x;
-//                 case 'g':
-//                     return self.y;
-//                 case 'b':
-//                     return self.z;
-//                 case 'a':
-//                     return self.w;
-//                 default:
-//                     return Reflect.get(...arguments);
-//             }
-//         },
-//     });
-// vec3 = proxifyVec(vec3);
-// vec4 = proxifyVec(vec4);
-class vec3 {
-    constructor(x, y, z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-    }
+import { vec3 } from '../lib';
+import {
+    defaultData,
+    GLOBAL,
+    LIGHT,
+    CAMERA,
+    TRANSBLOCK,
+    OBJECT,
+    tagnames,
+} from './constants';
 
-    get r() {
-        return this.x;
-    }
-
-    get g() {
-        return this.y;
-    }
-
-    get b() {
-        return this.z;
-    }
-}
-class vec4 extends vec3 {
-    constructor(x, y, z, w) {
-        super(x, y, z);
-        this.w = w;
-    }
-
-    get a() {
-        return this.w;
-    }
-}
-
-const defaultData = {
-    global: { ambient: 0.5, diffuse: 0.5, specular: 0.5 },
-    camera: {
-        pos: new vec4(5, 5, 5, 1),
-        up: new vec4(0, 1, 0, 0),
-        look: new vec4(-1, -1, -1, 0),
-        heightAngle: 45,
-        aspectRatio: 1,
-    },
-    light: [],
-    object: [],
-};
-
-const GLOBAL = 'globaldata';
-const LIGHT = 'lightdata';
-const CAMERA = 'cameradata';
-const TRANSBLOCK = 'transblock';
-const OBJECT = 'object';
-
-const tagnames = {
-    global: {
-        DIFFUSE: 'diffusecoeff',
-        SPECULAR: 'specularcoeff',
-        AMBIENT: 'ambientcoeff',
-    },
-    light: {
-        ID: 'id',
-        COLOR: 'color',
-        POS: 'position',
-    },
-    camera: {
-        POS: 'pos',
-        UP: 'up',
-    },
-    object: {
-        DIFFUSE: 'diffuse',
-        SPECULAR: 'specular',
-        AMBIENT: 'ambient',
-    },
-    transblock: {
-        TRANSLATE: 'translate',
-        SCALE: 'scale',
-        ROTATE: 'rotate',
-    },
-};
 let instantiatedObjects = {}; // TODO: make this non-global
 
 const extractXYZ = (xmlEl) =>
@@ -209,15 +126,19 @@ const parse = (scene) => {
         switch (child.tagName) {
             case GLOBAL:
                 for (const datum of child.children) {
+                    let propName, propVal;
                     switch (datum.tagName) {
                         case tagnames.global.DIFFUSE:
-                            data.global['diffuse'] = datum.getAttribute('v');
+                            propName = 'diffuse';
+                            propVal = datum.getAttribute('v');
                             break;
                         case tagnames.global.SPECULAR:
-                            data.global['specular'] = datum.getAttribute('v');
+                            propName = 'specular';
+                            propVal = datum.getAttribute('v');
                             break;
                         case tagnames.global.AMBIENT:
-                            data.global['ambient'] = datum.getAttribute('v');
+                            propName = 'ambient';
+                            propVal = datum.getAttribute('v');
                             break;
                         default:
                             console.error(
@@ -225,27 +146,37 @@ const parse = (scene) => {
                             );
                             break;
                     }
+                    if (propName) {
+                        data.global[propName] = propVal;
+                    }
                 }
                 break;
             case LIGHT:
                 const light = child;
                 const lightData = {};
                 for (const attr of light.children) {
+                    let propName, propVal;
                     switch (attr.tagName) {
                         case tagnames.light.ID:
-                            lightData['id'] = attr.getAttribute('v');
+                            propName = 'id';
+                            propVal = attr.getAttribute('v');
                             break;
                         case tagnames.light.COLOR:
-                            lightData['color'] = extractRGB(attr);
+                            propName = 'color';
+                            propVal = extractRGB(attr);
                             break;
                         case tagnames.light.POS:
-                            lightData['position'] = extractXYZ(attr);
+                            propName = 'position';
+                            propVal = extractXYZ(attr);
                             break;
                         default:
                             console.error(
                                 `Unknown light data tag: ${attr.tagName}`
                             );
                             break;
+                    }
+                    if (propName) {
+                        data.global[propName] = propVal;
                     }
                 }
                 data.light.push(lightData);

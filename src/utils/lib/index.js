@@ -53,7 +53,7 @@ const proxifyVec = (vec) =>
 const vec3Obj = (x, y, z) => ({ x, y, z });
 const vec4Obj = (x, y, z, w) => ({ x, y, z, w });
 
-class vec3 {
+class old_vec3 {
     constructor(x, y, z) {
         this.x = x;
         this.y = y;
@@ -104,7 +104,7 @@ class vec3 {
         return this.z;
     }
 }
-class vec4 extends vec3 {
+class old_vec4 extends vec3 {
     constructor(x, y, z, w) {
         super(x, y, z);
         this.w = w;
@@ -170,28 +170,30 @@ class vec4 extends vec3 {
     xyz = () => new vec3(this.x, this.y, this.z);
 }
 
-// class mat3 {
-//     constructor(row1, row2, row3) {
-//         if (Array.isArray(row1)) {
-//             if (Array.isArray(row2)) {
-//                 this.mat = [row1, row2, row3];
-//             } else {
-//                 this.mat = [row1, row1, row1];
-//             }
-//         } else {
-//             const singleVal = row1;
-//             for (let i = 0; i < 3; i++) {
-//                 let row = [];
-//                 for (let j = 0; j < 3; j++) {
-//                     row.push(singleVal);
-//                 }
-//                 this.mat.push(row);
-//             }
-//         }
-//     }
-// }
+class old_mat3 {
+    constructor(row1, row2, row3) {
+        if (Array.isArray(row1)) {
+            if (Array.isArray(row2)) {
+                this.mat = [row1, row2, row3];
+            } else {
+                this.mat = [row1, row1, row1];
+            }
+        } else {
+            const singleVal = row1;
+            for (let i = 0; i < 3; i++) {
+                let row = [];
+                for (let j = 0; j < 3; j++) {
+                    row.push(singleVal);
+                }
+                this.mat.push(row);
+            }
+        }
+    }
+}
 
 const mat3 = matrix;
+const vec3 = (x, y, z) => matrix([x, y, z]);
+const vec4 = (x, y, z, w) => matrix([x, y, z, w]);
 
 const zero_mat4 = () => zeros(4, 4);
 
@@ -304,7 +306,7 @@ const transformationTypes = {
 
 const clamp = (val, min, max) => Math.max(Math.min(val, max), min);
 
-const unused = { proxifyVec, vec3Obj, vec4Obj };
+const unused = { proxifyVec, vec3Obj, vec4Obj, old_vec3, old_vec4, old_mat3 };
 export {
     vec3,
     vec4,

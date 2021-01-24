@@ -23,6 +23,11 @@ class vec3 {
         this.x = x;
         this.y = y;
         this.z = z;
+
+        if (y === undefined && z === undefined) {
+            this.y = x;
+            this.z = x;
+        }
     }
 
     get r() {
@@ -41,6 +46,12 @@ class vec4 extends vec3 {
     constructor(x, y, z, w) {
         super(x, y, z);
         this.w = w;
+
+        if (y === undefined && z === undefined && w === undefined) {
+            this.y = x;
+            this.z = x;
+            this.w = x;
+        }
     }
 
     get a() {

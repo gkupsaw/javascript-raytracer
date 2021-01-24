@@ -26,11 +26,11 @@ class Camera {
             mat_add(this.up, negate(mat_mul(this.w, dot(this.up, this.w))))
         );
         this.u = vec4(cross(xyz(this.v), xyz(this.w)), 0);
-        this.aspectRatio = 1;
-        this.thetaH = radians(60);
+        this.aspectRatio = 1.35065; // 1;
+        this.thetaH = 0.785398; //radians(60);
         this.thetaW = 2 * atan(tan(this.thetaH / 2) * this.aspectRatio);
         this.near = 1;
-        this.far = 30;
+        this.far = 50; //30;
 
         this.updateViewMatrix();
         this.updateProjectionMatrix();
@@ -163,7 +163,7 @@ class Camera {
             [0, 0, -1 / (c + 1), c / (c + 1)],
             [0, 0, -1, 0]
         );
-        this.perspectiveTransformation = transpose(mat); // transpose to row-major order
+        this.perspectiveTransformation = mat; // transpose to row-major order
     }
 
     updateScaleMatrix() {
@@ -173,7 +173,17 @@ class Camera {
             [0, 0, 1 / this.far, 0],
             [0, 0, 0, 1]
         );
-        this.scaleMatrix = transpose(mat); // transpose to row-major order
+        // console.log(this.thetaW);
+        // console.log(this.thetaH);
+        // console.log(this.far);
+        // console.log(this.aspectRatio);
+        // console.log(this.near);
+        // console.log(this.eye);
+        // console.log(this.up);
+        // console.log(this.u);
+        // console.log(this.v);
+        // console.log(this.w);
+        this.scaleMatrix = mat; // transpose to row-major order
     }
 
     updateViewMatrix() {
@@ -188,7 +198,7 @@ class Camera {
             [this.w.x(), this.w.y(), this.w.z(), 0],
             [0, 0, 0, 1]
         );
-        this.rotationMatrix = transpose(mat); // transpose to row-major order
+        this.rotationMatrix = mat; // transpose to row-major order
     }
 
     updateTranslationMatrix() {
@@ -198,7 +208,7 @@ class Camera {
             [0, 0, 1, -this.eye.z()],
             [0, 0, 0, 1]
         );
-        this.translationMatrix = transpose(mat); // transpose to row-major order
+        this.translationMatrix = mat; // transpose to row-major order
     }
 }
 

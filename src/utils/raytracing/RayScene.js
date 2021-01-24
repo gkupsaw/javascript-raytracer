@@ -55,6 +55,9 @@ class RayScene {
         const filmToWorld = mat_inv(
             mat_mul(camera.getScaleMatrix(), camera.getViewMatrix())
         );
+        console.log(camera.getScaleMatrix());
+        console.log(camera.getViewMatrix());
+        console.log(filmToWorld);
         const pEye = mat_mul(filmToWorld, vec4(0, 0, 0, 1));
         const yMax = height;
 

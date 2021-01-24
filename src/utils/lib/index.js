@@ -6,7 +6,6 @@ import {
     transpose as mat_transpose,
     multiply as mat_mul,
     add as mat_add,
-    sum,
     matrix,
     index,
     range,
@@ -47,7 +46,17 @@ Matrix.prototype.a = function () {
     return subset(this, index(3));
 };
 
-const normalize = (vec) => mat_mul(vec, 1 / sum(vec));
+const normalize = (vec) => {
+    let sqrSum = 0;
+
+    vec.forEach((val) => {
+        sqrSum += Math.pow(val, 2);
+    });
+
+    const magnitude = Math.sqrt(sqrSum);
+
+    return mat_mul(vec, 1 / magnitude);
+};
 // const dot = () => console.error('No dot!');
 // const mat_inv = () => console.error('No matinv!');
 // const mat_transpose = () => console.error('No matranspose!');

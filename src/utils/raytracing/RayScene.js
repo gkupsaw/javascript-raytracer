@@ -8,6 +8,9 @@ import {
     lightTypes,
     clamp,
     normalize,
+    mat_inv,
+    mat_transpose,
+    mat_mul,
 } from '../lib';
 import {
     computeAttenuation,
@@ -18,37 +21,29 @@ import {
 import * as ImplicitShapes from './ImplicitShapes';
 
 //add light functions
+//math ops on vecs
 
 const MAX_DEPTH = 4;
-const mat_inv = () => {};
-const mat_transpose = () => {};
-const mat_mul = () => {};
 
 const processEvents = () => {};
 
 const computeUVColor = () => {};
 
-const CAMERA = {
-    getScaleMatrix: () => {},
-    getViewMatrix: () => {},
-};
-
-const CANVAS = {
-    data: () => {},
-    height: () => 0,
-    width: () => 0,
-    update: () => {},
-};
-
 const settings = {};
 
 class RayScene {
-    constructor() {
+    constructor(global, shapes, lights) {
         this.halt = false;
-        this.global = {};
-        this.shapes = [];
-        this.lights = [];
+        this.global = global ?? {};
+        this.shapes = shapes ?? [];
+        this.lights = lights ?? [];
     }
+
+    parseScenegraph = (scenegraph) => {
+        this.global = scenegraph.global;
+        this.lights = scenegraph.light;
+        this.shapes = scenegraph.object;
+    };
 
     cancel = () => {
         this.halt = true;
@@ -67,6 +62,7 @@ class RayScene {
 
         let y;
         for (y = 0; y < yMax; y++) {
+            console.log('rendering row');
             this.renderRow(canvas, y, filmToWorld, pEye);
             if (this.halt) {
                 break;
@@ -95,7 +91,7 @@ class RayScene {
             const dir = normalize(worldSpaceLoc - pEye);
             const ray = new Ray(pEye, dir);
 
-            // calculate intersection of this ray for every shape in m_shapes
+            // calculate intersection of this ray for every shape in this.shapes
             // find closest intersection
             // calculate lighting at that point
 
@@ -132,7 +128,7 @@ class RayScene {
     computeIntersection = (ray) => {
         let closestIntersection, currIntersection;
 
-        for (const shape of this.m_shapes) {
+        for (const shape of this.shapes) {
             const objectToWorld = shape.inverseTransformation;
             // transform to object space (p + d*t = MO => M^-1 * (p + d*t) = O)
             const rayOS = new Ray(

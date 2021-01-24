@@ -8,7 +8,7 @@ const implicitTrunk = (ray, a, b, c, top, bottom) => {
     const p = ray.eye;
     const d = ray.dir;
 
-    if (discriminant >= 0 && a != 0) {
+    if (discriminant >= 0 && a !== 0) {
         const denom = 2 * a;
         const sqrtDiscr = Math.sqrt(discriminant);
 

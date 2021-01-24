@@ -98,9 +98,33 @@ class Ray {
     }
 }
 
+class GlobalData {
+    constructor({ kd, ka, ks } = {}) {
+        this.kd = kd;
+        this.ka = ka;
+        this.ks = ks;
+    }
+}
+
+class LightData {
+    constructor({ id, type, color, func, pos, dir } = {}) {
+        this.id = id;
+        this.type = type;
+        this.color = color;
+        this.func = func;
+        this.pos = pos;
+        this.dir = dir;
+    }
+}
+
 class ShapeData {
-    constructor(primitive, transformation, inverseTransformation, texture) {
-        this.primitive = primitive;
+    constructor({
+        primitive,
+        transformation,
+        inverseTransformation,
+        texture,
+    } = {}) {
+        this.primitive = primitive ?? new Primitive();
         this.transformation = transformation;
         this.inverseTransformation = inverseTransformation;
         this.texture = texture;
@@ -115,18 +139,65 @@ class IntersectionData {
     }
 }
 
+class Primitive {
+    constructor({ type, meshfile, material } = {}) {
+        this.type = type ?? primitiveTypes.UNK;
+        this.meshfile = meshfile;
+        this.material = material ?? new Material();
+    }
+}
+
+class Material {
+    constructor({ diffuse, ambient, specular, blend, shininess } = {}) {
+        this.diffuse = diffuse;
+        this.ambient = ambient;
+        this.specular = specular;
+        this.blend = blend;
+        this.shininess = shininess;
+    }
+}
+
+class Transformation {
+    constructor({ type, translate, scale, rotate, angle, matrix } = {}) {
+        this.type = type ?? transformationTypes.UNK;
+        this.translate = translate;
+        this.scale = scale;
+        this.rotate = rotate;
+        this.angle = angle;
+        this.matrix = matrix;
+    }
+}
+
 const primitiveTypes = {
     CONE: 'CONE',
     CYLINDER: 'CYLINDER',
     CUBE: 'CUBE',
     SPHERE: 'SPHERE',
+    UNK: 'UNK',
 };
 
-const lightTypes = { POINT: 'POINT', DIRECTIONAL: 'DIRECTIONAL' };
+const lightTypes = {
+    POINT: 'POINT',
+    DIRECTIONAL: 'DIRECTIONAL',
+    UNK: 'UNK',
+};
+
+const transformationTypes = {
+    TRANSLATE: 'TRANSLATE',
+    ROTATE: 'ROTATE',
+    SCALE: 'SCALE',
+    UNK: 'UNK',
+};
 
 const clamp = (val, min, max) => Math.max(Math.min(val, max), min);
-const normalize = () => {};
-const dot = () => {};
+const normalize = () => console.error('No normalize!');
+const dot = () => console.error('No dot!');
+const mat_inv = () => console.error('No matinv!');
+const mat_transpose = () => console.error('No matranspose!');
+const mat_mul = () => console.error('No matmul!');
+const translate = () => console.error('No translate!');
+const scale = () => console.error('No scale!');
+const rotate = () => console.error('No rotate!');
 
 const unused = { proxifyVec, vec3Obj, vec4Obj };
 export {
@@ -135,12 +206,24 @@ export {
     mat3,
     RGBA,
     Ray,
+    GlobalData,
+    LightData,
     ShapeData,
     IntersectionData,
+    Primitive,
+    Material,
+    Transformation,
     primitiveTypes,
     lightTypes,
+    transformationTypes,
     clamp,
     normalize,
     dot,
+    mat_inv,
+    mat_transpose,
+    mat_mul,
+    translate,
+    scale,
+    rotate,
     unused,
 };

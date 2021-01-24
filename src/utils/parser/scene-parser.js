@@ -1,4 +1,19 @@
-import { vec4, RGBA } from '../lib';
+import {
+    vec3,
+    vec4,
+    RGBA,
+    GlobalData,
+    LightData,
+    ShapeData,
+    lightTypes,
+    Primitive,
+    Material,
+    mat_inv,
+    translate,
+    scale,
+    rotate,
+    Transformation,
+} from '../lib';
 import {
     defaultData,
     GLOBAL,
@@ -34,21 +49,21 @@ const getRGBA = (xmlEl) =>
     );
 
 const parseGlobal = (global) => {
-    let globalData = {};
+    let globalData = new GlobalData();
 
     for (const datum of global.children) {
         let propName, propVal;
         switch (datum.tagName) {
             case tagnames.global.DIFFUSE:
-                propName = 'diffuse';
+                propName = 'kd';
                 propVal = datum.getAttribute('v');
                 break;
             case tagnames.global.SPECULAR:
-                propName = 'specular';
+                propName = 'ks';
                 propVal = datum.getAttribute('v');
                 break;
             case tagnames.global.AMBIENT:
-                propName = 'ambient';
+                propName = 'ka';
                 propVal = datum.getAttribute('v');
                 break;
             default:
@@ -84,7 +99,10 @@ const parseCamera = (camera) => {
 };
 
 const parseLight = (light) => {
-    let lightData = {};
+    let lightData = new LightData({
+        type: lightTypes.POINT,
+        func: new vec3(1, 0, 0),
+    });
 
     for (const attr of light.children) {
         let propName, propVal;
@@ -113,26 +131,25 @@ const parseLight = (light) => {
     return lightData;
 };
 
-const parseObject = (object, transformations = []) => {
+const parseObject = (object, transformation = new Transformation()) => {
     const name = object.getAttribute('name');
     const type = object.getAttribute('type');
     let objects = [];
 
     switch (type) {
         case 'primitive':
-            let objectData = { type, name, transformations };
+            let material = new Material();
 
             for (const attr of object.children) {
                 switch (attr.tagName) {
                     case tagnames.object.DIFFUSE:
-                        objectData['diffuse'] = getRGBA(attr);
+                        material.diffuse = getRGBA(attr);
                         break;
                     case tagnames.object.SPECULAR:
-                        objectData['specular'] = getRGBA(attr);
-
+                        material.specular = getRGBA(attr);
                         break;
                     case tagnames.object.AMBIENT:
-                        objectData['ambient'] = getRGBA(attr);
+                        material.ambient = getRGBA(attr);
                         break;
                     default:
                         console.error(
@@ -141,6 +158,13 @@ const parseObject = (object, transformations = []) => {
                         break;
                 }
             }
+
+            const primitive = new Primitive({ type: name, material });
+            const objectData = new ShapeData({
+                primitive,
+                transformation,
+                inverseTransformation: mat_inv(transformation),
+            });
 
             if (!instantiatedObjects[name]) {
                 instantiatedObjects[name] = objectData;
@@ -155,14 +179,23 @@ const parseObject = (object, transformations = []) => {
                         for (const treeChild of attr.children) {
                             switch (treeChild.tagName) {
                                 case tagnames.transblock.TRANSLATE:
+                                    transformation = translate(
+                                        transform,
+                                        getPosition(treeChild)
+                                    );
+                                    break;
                                 case tagnames.transblock.ROTATE:
+                                    transformation = rotate(
+                                        transform,
+                                        treeChild.getAttribute('angle'),
+                                        getPosition(treeChild)
+                                    );
+                                    break;
                                 case tagnames.transblock.SCALE:
-                                    transformations.push({
-                                        type: treeChild.tagName,
-                                        x: treeChild.getAttribute('x'),
-                                        y: treeChild.getAttribute('y'),
-                                        z: treeChild.getAttribute('z'),
-                                    });
+                                    transformation = scale(
+                                        transform,
+                                        getPosition(treeChild)
+                                    );
                                     break;
                                 case OBJECT:
                                     objects.push(
@@ -177,7 +210,7 @@ const parseObject = (object, transformations = []) => {
                         }
                         break;
                     case OBJECT:
-                        objects.push(parseObject(attr, transformations));
+                        objects.push(parseObject(attr, transformation));
                         break;
                     default:
                         console.error(
@@ -188,7 +221,7 @@ const parseObject = (object, transformations = []) => {
             }
             break;
         case 'instance':
-            objects.push({ ...instantiatedObjects[name], type });
+            objects.push(new ShapeData({ ...instantiatedObjects[name] }));
             break;
         default:
             console.error(`Unknown object type tag: ${type}`);

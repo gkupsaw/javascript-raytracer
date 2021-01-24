@@ -1,4 +1,5 @@
 import { parse } from './parser/scene-parser';
+import { RayScene } from './raytracing/RayScene';
 
 const scene = `<scenefile>
 <globaldata>
@@ -30,8 +31,22 @@ const scene = `<scenefile>
 
 </scenefile>`;
 
+const CAMERA = {
+    getScaleMatrix: () => {},
+    getViewMatrix: () => {},
+};
+
+const CANVAS = {
+    data: () => {},
+    height: () => 10,
+    width: () => 10,
+    update: () => {},
+};
+
 const runRaytracer = () => {
-    console.log(parse(scene));
+    const { global, camera, light, object } = parse(scene);
+    const rayscene = new RayScene(global, light, object);
+    rayscene.render(CANVAS, CAMERA);
 };
 
 export { runRaytracer };

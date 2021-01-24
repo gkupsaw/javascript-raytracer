@@ -125,6 +125,8 @@ const primitiveTypes = {
 const lightTypes = { POINT: 'POINT', DIRECTIONAL: 'DIRECTIONAL' };
 
 const clamp = (val, min, max) => Math.max(Math.min(val, max), min);
+const normalize = () => {};
+const dot = () => {};
 
 const unused = { proxifyVec, vec3Obj, vec4Obj };
 export {
@@ -138,5 +140,7 @@ export {
     primitiveTypes,
     lightTypes,
     clamp,
+    normalize,
+    dot,
     unused,
 };

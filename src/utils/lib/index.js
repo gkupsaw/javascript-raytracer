@@ -1,16 +1,20 @@
 import {
-    norm as normalize,
     dot,
     det,
     inv,
     transpose as mat_transpose,
     multiply as mat_mul,
     add as mat_add,
+    sum,
     matrix,
+    index,
+    subset,
+    identity,
     zeros,
     chain,
 } from 'mathjs';
-// const normalize = () => console.error('No normalize!');
+
+const normalize = (vec) => mat_mul(vec, 1 / sum(vec));
 // const dot = () => console.error('No dot!');
 // const mat_inv = () => console.error('No matinv!');
 // const mat_transpose = () => console.error('No matranspose!');
@@ -35,6 +39,7 @@ const mat_inv = (M) => {
     }
 };
 const negate = (M) => mat_mul(M, -1);
+const xyz = (vec) => subset(vec, index([0, 2]));
 
 const proxifyVec = (vec) =>
     new Proxy(vec, {
@@ -209,6 +214,7 @@ const vec4 = (x, y, z, w) => {
 };
 
 const zero_mat4 = () => zeros(4, 4);
+const id4 = () => identity(4);
 
 class RGBA {
     constructor(r, g, b, a) {
@@ -325,6 +331,7 @@ export {
     vec4,
     mat3,
     zero_mat4,
+    id4,
     matrix,
     RGBA,
     Ray,
@@ -345,6 +352,7 @@ export {
     mat_transpose,
     mat_mul,
     mat_add,
+    xyz,
     negate,
     translate,
     scale,

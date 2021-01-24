@@ -1,6 +1,7 @@
 import {
     vec3,
     vec4,
+    zero_mat4,
     RGBA,
     GlobalData,
     LightData,
@@ -12,7 +13,6 @@ import {
     translate,
     scale,
     rotate,
-    Transformation,
 } from '../lib';
 import {
     defaultData,
@@ -131,7 +131,7 @@ const parseLight = (light) => {
     return lightData;
 };
 
-const parseObject = (object, transformation = new Transformation()) => {
+const parseObject = (object, transformation = zero_mat4()) => {
     const name = object.getAttribute('name');
     const type = object.getAttribute('type');
     let objects = [];
@@ -180,26 +180,26 @@ const parseObject = (object, transformation = new Transformation()) => {
                             switch (treeChild.tagName) {
                                 case tagnames.transblock.TRANSLATE:
                                     transformation = translate(
-                                        transform,
+                                        transformation,
                                         getPosition(treeChild)
                                     );
                                     break;
                                 case tagnames.transblock.ROTATE:
                                     transformation = rotate(
-                                        transform,
+                                        transformation,
                                         treeChild.getAttribute('angle'),
                                         getPosition(treeChild)
                                     );
                                     break;
                                 case tagnames.transblock.SCALE:
                                     transformation = scale(
-                                        transform,
+                                        transformation,
                                         getPosition(treeChild)
                                     );
                                     break;
                                 case OBJECT:
-                                    objects.push(
-                                        parseObject(treeChild, transformations)
+                                    objects = objects.concat(
+                                        parseObject(treeChild, transformation)
                                     );
                                     break;
                                 default:

@@ -32,18 +32,12 @@ const computeUVColor = () => {};
 const settings = {};
 
 class RayScene {
-    constructor(global, shapes, lights) {
+    constructor(global, lights, shapes) {
         this.halt = false;
         this.global = global ?? {};
-        this.shapes = shapes ?? [];
         this.lights = lights ?? [];
+        this.shapes = shapes ?? [];
     }
-
-    parseScenegraph = (scenegraph) => {
-        this.global = scenegraph.global;
-        this.lights = scenegraph.light;
-        this.shapes = scenegraph.object;
-    };
 
     cancel = () => {
         this.halt = true;
@@ -55,7 +49,7 @@ class RayScene {
         const height = canvas.height();
 
         const filmToWorld = mat_inv(
-            mat_mul(camera.getScaleMatrix() * camera.getViewMatrix())
+            mat_mul(camera.getScaleMatrix(), camera.getViewMatrix())
         );
         const pEye = filmToWorld * new vec4(0, 0, 0, 1);
         const yMax = height;
@@ -147,6 +141,7 @@ class RayScene {
                     currIntersection = ImplicitShapes.implicitCube(rayOS);
                     break;
                 case primitiveTypes.SPHERE:
+                    console.log('hit sphere');
                     currIntersection = ImplicitShapes.implicitSphere(rayOS);
                     break;
                 default:

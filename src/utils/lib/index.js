@@ -1,3 +1,38 @@
+import {
+    norm as normalize,
+    dot,
+    det,
+    inv,
+    transpose as mat_transpose,
+    multiply as mat_mul,
+    matrix,
+    zeros,
+} from 'mathjs';
+// const normalize = () => console.error('No normalize!');
+// const dot = () => console.error('No dot!');
+// const mat_inv = () => console.error('No matinv!');
+// const mat_transpose = () => console.error('No matranspose!');
+// const mat_mul = () => console.error('No matmul!');
+const translate = (M, x) => {
+    console.error('No translate!');
+    return M;
+};
+const scale = (M, x) => {
+    console.error('No scale!');
+    return M;
+};
+const rotate = (M, x, a) => {
+    console.error('No rotate!');
+    return M;
+};
+const mat_inv = (M) => {
+    if (det(M) === 0) {
+        return M;
+    } else {
+        return inv(M);
+    }
+};
+
 const proxifyVec = (vec) =>
     new Proxy(vec, {
         get: function (self, prop) {
@@ -23,12 +58,24 @@ class vec3 {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.dim = 3;
 
         if (y === undefined && z === undefined) {
             this.y = x;
             this.z = x;
         }
     }
+
+    multiply = (vec) => {
+        if (vec.dim === 3) {
+            return new vec3(this.x * vec.x, this.y * vec.y, this.z * vec.z);
+        } else if (!isNaN(vec)) {
+            const val = vec;
+            return new vec3(this.x * val, this.y * val, this.z * val);
+        }
+        console.error('Bad val to vec3 multiply');
+        return vec;
+    };
 
     get r() {
         return this.x;
@@ -46,6 +93,7 @@ class vec4 extends vec3 {
     constructor(x, y, z, w) {
         super(x, y, z);
         this.w = w;
+        this.dim = 4;
 
         if (y === undefined && z === undefined && w === undefined) {
             this.y = x;
@@ -54,6 +102,27 @@ class vec4 extends vec3 {
         }
     }
 
+    multiply = (vec) => {
+        if (vec.dim === 4) {
+            return new vec4(
+                this.x * vec.x,
+                this.y * vec.y,
+                this.z * vec.z,
+                this.w * vec.w
+            );
+        } else if (!isNaN(vec)) {
+            const val = vec;
+            return new vec4(
+                this.x * val,
+                this.y * val,
+                this.z * val,
+                this.w * val
+            );
+        }
+        console.error('Bad val to vec4 multiply');
+        return vec;
+    };
+
     get a() {
         return this.w;
     }
@@ -61,26 +130,30 @@ class vec4 extends vec3 {
     xyz = () => new vec3(this.x, this.y, this.z);
 }
 
-class mat3 {
-    constructor(row1, row2, row3) {
-        if (Array.isArray(row1)) {
-            if (Array.isArray(row2)) {
-                this.mat = [row1, row2, row3];
-            } else {
-                this.mat = [row1, row1, row1];
-            }
-        } else {
-            const singleVal = row1;
-            for (let i = 0; i < 3; i++) {
-                let row = [];
-                for (let j = 0; j < 3; j++) {
-                    row.push(singleVal);
-                }
-                this.mat.push(row);
-            }
-        }
-    }
-}
+// class mat3 {
+//     constructor(row1, row2, row3) {
+//         if (Array.isArray(row1)) {
+//             if (Array.isArray(row2)) {
+//                 this.mat = [row1, row2, row3];
+//             } else {
+//                 this.mat = [row1, row1, row1];
+//             }
+//         } else {
+//             const singleVal = row1;
+//             for (let i = 0; i < 3; i++) {
+//                 let row = [];
+//                 for (let j = 0; j < 3; j++) {
+//                     row.push(singleVal);
+//                 }
+//                 this.mat.push(row);
+//             }
+//         }
+//     }
+// }
+
+const mat3 = matrix;
+
+const zero_mat4 = () => zeros(4, 4);
 
 class RGBA {
     constructor(r, g, b, a) {
@@ -169,41 +242,35 @@ class Transformation {
 }
 
 const primitiveTypes = {
-    CONE: 'CONE',
-    CYLINDER: 'CYLINDER',
-    CUBE: 'CUBE',
-    SPHERE: 'SPHERE',
+    CONE: 'cone',
+    CYLINDER: 'cylinder',
+    CUBE: 'cube',
+    SPHERE: 'sphere',
     UNK: 'UNK',
 };
 
 const lightTypes = {
-    POINT: 'POINT',
-    DIRECTIONAL: 'DIRECTIONAL',
+    POINT: 'point',
+    DIRECTIONAL: 'directional',
     UNK: 'UNK',
 };
 
 const transformationTypes = {
-    TRANSLATE: 'TRANSLATE',
-    ROTATE: 'ROTATE',
-    SCALE: 'SCALE',
+    TRANSLATE: 'translate',
+    ROTATE: 'rotate',
+    SCALE: 'scale',
     UNK: 'UNK',
 };
 
 const clamp = (val, min, max) => Math.max(Math.min(val, max), min);
-const normalize = () => console.error('No normalize!');
-const dot = () => console.error('No dot!');
-const mat_inv = () => console.error('No matinv!');
-const mat_transpose = () => console.error('No matranspose!');
-const mat_mul = () => console.error('No matmul!');
-const translate = () => console.error('No translate!');
-const scale = () => console.error('No scale!');
-const rotate = () => console.error('No rotate!');
 
 const unused = { proxifyVec, vec3Obj, vec4Obj };
 export {
     vec3,
     vec4,
     mat3,
+    zero_mat4,
+    matrix,
     RGBA,
     Ray,
     GlobalData,

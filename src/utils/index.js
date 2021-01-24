@@ -1,3 +1,4 @@
+import { zero_mat4 } from './lib';
 import { parse } from './parser/scene-parser';
 import { RayScene } from './raytracing/RayScene';
 
@@ -32,8 +33,8 @@ const scene = `<scenefile>
 </scenefile>`;
 
 const CAMERA = {
-    getScaleMatrix: () => {},
-    getViewMatrix: () => {},
+    getScaleMatrix: () => zero_mat4(),
+    getViewMatrix: () => zero_mat4(),
 };
 
 const CANVAS = {

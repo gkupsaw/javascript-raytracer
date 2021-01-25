@@ -13,7 +13,6 @@ import {
     scale,
     rotate,
     id4,
-    matrix,
 } from '../lib';
 import {
     defaultData,
@@ -176,15 +175,6 @@ const parseObject = (object, transformation = id4()) => {
                 transformation,
                 inverseTransformation,
             });
-
-            // TODO: REMOVE
-            objectData.inverseTransformation = matrix([
-                [1, 0, 0, 0],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-                [0, 0, 0, 1],
-            ]);
-            console.log(objectData.inverseTransformation);
 
             if (!instantiatedObjects[name]) {
                 instantiatedObjects[name] = objectData;

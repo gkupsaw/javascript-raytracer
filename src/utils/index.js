@@ -57,7 +57,7 @@ const runRaytracer = () => {
 
     const rayscene = new RayScene(global, light, object);
     rayscene.render(CANVAS, CAMERA);
-    console.log(CANVAS.data().filter((v) => v));
+    console.log(`Got ${CANVAS.data().filter((v) => v).length} intersections`);
 };
 
 export { runRaytracer };

@@ -72,7 +72,7 @@ const clamp = (M, min = 0, max = 1) => {
 
 const mat3 = (row1, row2, row3) => {
     if (row1 && row2 === undefined && row3 === undefined) {
-        const mat4ToShrink = row1;
+        const mat4ToShrink = row1.clone();
         mat4ToShrink.resize([3, 3]);
         return mat4ToShrink;
     }
@@ -99,8 +99,8 @@ const vec4 = (x, y, z, w) => {
     if (y === undefined && z === undefined && w === undefined) {
         vec = matrix([x, x, x, x]);
     } else if (z === undefined && w === undefined) {
-        x.resize([4], y);
-        vec = x;
+        vec = x.clone();
+        vec.resize([4], y);
     } else {
         vec = matrix([x, y, z, w]);
     }

@@ -57,7 +57,7 @@ class RayScene {
         const pEye = mat_mul(filmToWorld, vec4(0, 0, 0, 1));
         const yMax = height;
 
-        this.renderRow(canvas, 542, filmToWorld, pEye);
+        this.renderRow(canvas, 680, filmToWorld, pEye);
         return;
 
         let y;
@@ -115,12 +115,12 @@ class RayScene {
                     pixelIntersection,
                     wscIntersectionPoint
                 );
-                pixelIntensity = mat_mul(pixelIntensity, 255);
-                data[pixelIndex] = vec4(
-                    // new RGBA
-                    pixelIntensity.xyz(),
-                    255
-                );
+                // pixelIntensity = mat_mul(pixelIntensity, 255);
+                // data[pixelIndex] = vec4(
+                //     // new RGBA
+                //     pixelIntensity.xyz(),
+                //     255
+                // );
             }
         }
 
@@ -139,6 +139,7 @@ class RayScene {
                 mat_mul(objectToWorld, ray.eye),
                 mat_mul(objectToWorld, ray.dir)
             );
+            console.log(objectToWorld.size());
 
             switch (shape.primitive.type) {
                 case primitiveTypes.CONE:

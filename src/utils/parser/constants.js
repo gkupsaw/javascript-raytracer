@@ -17,6 +17,7 @@ const defaultData = {
         cAmbient: vec4(0.5, 0.5, 0.5, 1), // new RGBA
         cSpecular: vec4(0.5, 0.5, 0.5, 1), // new RGBA
         cReflective: vec4(1, 1, 1, 1), // new RGBA
+        shininess: 0.5,
     },
 };
 

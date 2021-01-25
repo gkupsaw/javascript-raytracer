@@ -265,7 +265,7 @@ class RayScene {
             }
 
             let attenuation = 1;
-            let diffuseComponent,
+            let diffuseComponent = vec4(0),
                 specularComponent = vec4(0);
             if (!isOccluded) {
                 if (useAttenuation) {
@@ -297,7 +297,7 @@ class RayScene {
                     attenuation,
                     mat_mul(
                         light.color,
-                        mat_add((diffuseComponent, specularComponent))
+                        mat_add(diffuseComponent, specularComponent)
                     )
                 )
             );

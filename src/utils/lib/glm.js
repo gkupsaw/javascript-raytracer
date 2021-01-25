@@ -41,16 +41,15 @@ const translate = (M, x) => {
 };
 const scale = (M, x) => {
     const dim = parseInt(x.size());
-    const maxDim = dim - 1;
-    let indices = [],
-        replacements = [];
 
     for (let i = 0; i < dim; i++) {
-        indices.push(i);
-        replacements.push(subset(M, index(i, i)) * subset(x, index(i)));
+        M = subset(
+            M,
+            index(i, i),
+            subset(M, index(i, i)) * subset(x, index(i))
+        ); // is this less efficient?
     }
 
-    M = subset(M, index(indices, maxDim), replacements);
     return M;
 };
 const rotate = (M, x, a) => {

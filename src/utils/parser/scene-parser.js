@@ -28,6 +28,12 @@ let instantiatedObjects = {}; // TODO: make this non-global
 
 const parseFloatAttr = (xmlEl, attr) => parseFloat(xmlEl.getAttribute(attr));
 
+const getVec3 = (xmlEl) =>
+    vec3(
+        parseFloatAttr(xmlEl, 'x'),
+        parseFloatAttr(xmlEl, 'y'),
+        parseFloatAttr(xmlEl, 'z')
+    );
 const getPosition = (xmlEl) =>
     vec4(
         parseFloatAttr(xmlEl, 'x'),
@@ -186,20 +192,20 @@ const parseObject = (object, transformation = id4()) => {
                                 case tagnames.transblock.TRANSLATE:
                                     transformation = translate(
                                         transformation,
-                                        getPosition(treeChild)
+                                        getVec3(treeChild)
                                     );
                                     break;
                                 case tagnames.transblock.ROTATE:
                                     transformation = rotate(
                                         transformation,
                                         treeChild.getAttribute('angle'),
-                                        getPosition(treeChild)
+                                        getVec3(treeChild)
                                     );
                                     break;
                                 case tagnames.transblock.SCALE:
                                     transformation = scale(
                                         transformation,
-                                        getPosition(treeChild)
+                                        getVec3(treeChild)
                                     );
                                     break;
                                 case OBJECT:

@@ -26,30 +26,32 @@ import {
 
 let instantiatedObjects = {}; // TODO: make this non-global
 
+const parseFloatAttr = (xmlEl, attr) => parseFloat(xmlEl.getAttribute(attr));
+
 const getPosition = (xmlEl) =>
     vec4(
-        xmlEl.getAttribute('x'),
-        xmlEl.getAttribute('y'),
-        xmlEl.getAttribute('z'),
+        parseFloatAttr(xmlEl, 'x'),
+        parseFloatAttr(xmlEl, 'y'),
+        parseFloatAttr(xmlEl, 'z'),
         1
     );
 const getDirection = (xmlEl) =>
     vec4(
-        xmlEl.getAttribute('x'),
-        xmlEl.getAttribute('y'),
-        xmlEl.getAttribute('z'),
+        parseFloatAttr(xmlEl, 'x'),
+        parseFloatAttr(xmlEl, 'y'),
+        parseFloatAttr(xmlEl, 'z'),
         0
     );
 const getRGBA = (xmlEl) =>
     new RGBA(
-        xmlEl.getAttribute('r'),
-        xmlEl.getAttribute('g'),
-        xmlEl.getAttribute('b'),
+        parseFloatAttr(xmlEl, 'r'),
+        parseFloatAttr(xmlEl, 'g'),
+        parseFloatAttr(xmlEl, 'b'),
         1
     );
 
 const parseGlobal = (global) => {
-    let globalData = new GlobalData();
+    let globalData = new GlobalData({ ...defaultData.global });
 
     for (const datum of global.children) {
         let propName, propVal;
@@ -138,18 +140,18 @@ const parseObject = (object, transformation = id4()) => {
 
     switch (type) {
         case 'primitive':
-            let material = new Material();
+            let material = new Material({ ...defaultData.material });
 
             for (const attr of object.children) {
                 switch (attr.tagName) {
                     case tagnames.object.DIFFUSE:
-                        material.diffuse = getRGBA(attr);
+                        material.setDiffuse(getRGBA(attr));
                         break;
                     case tagnames.object.SPECULAR:
-                        material.specular = getRGBA(attr);
+                        material.setSpecular(getRGBA(attr));
                         break;
                     case tagnames.object.AMBIENT:
-                        material.ambient = getRGBA(attr);
+                        material.setAmbient(getRGBA(attr));
                         break;
                     default:
                         console.error(

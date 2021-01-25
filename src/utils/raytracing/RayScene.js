@@ -57,6 +57,9 @@ class RayScene {
         const pEye = mat_mul(filmToWorld, vec4(0, 0, 0, 1));
         const yMax = height;
 
+        this.renderRow(canvas, 542, filmToWorld, pEye);
+        return;
+
         let y;
         for (y = 0; y < yMax; y++) {
             console.log('rendering row');
@@ -87,9 +90,6 @@ class RayScene {
             const worldSpaceLoc = mat_mul(filmToWorld, filmPlaneLoc);
             const dir = normalize(mat_add(worldSpaceLoc, pEye.negate()));
             const ray = new Ray(pEye, dir);
-            if (y === 0) {
-            } //console.log({ pEye, dir, worldSpaceLoc });
-            else break;
 
             // calculate intersection of this ray for every shape in this.shapes
             // find closest intersection
@@ -180,10 +180,11 @@ class RayScene {
         const EPSILON = 1e-2;
         const shape = oscIntersection.shape;
         const mat = shape.primitive.material;
-        const ambientIntensity = mat_mul(this.global.ka, mat.cAmbient);
-        let diffuseIntensity = mat_mul(this.global.kd, mat.cDiffuse);
-        const specularIntensity = mat_mul(this.global.ks, mat.cSpecular);
-        const recursiveIntensity = mat_mul(this.global.ks, mat.cReflective);
+        console.log(shape);
+        const ambientIntensity = mat_mul(mat.cAmbient, this.global.ka);
+        let diffuseIntensity = mat_mul(mat.cDiffuse, this.global.kd);
+        const specularIntensity = mat_mul(mat.cSpecular, this.global.ks);
+        const recursiveIntensity = mat_mul(mat.cReflective, this.global.ks);
         const V = normalize(wscRayDir.negate()); // normalized wsc line of sight
         const shininess = mat.shininess;
 

@@ -27,19 +27,21 @@ const normalize = (vec) => {
 
 const translate = (M, x) => {
     const dim = parseInt(x.size());
+    const maxDim = dim - 1;
     let indices = [],
         replacements = [];
 
     for (let i = 0; i < dim; i++) {
         indices.push(i);
-        replacements.push(subset(M, index(i, 3)) - subset(x, index(i)));
+        replacements.push(subset(M, index(i, maxDim)) - subset(x, index(i)));
     }
 
-    M = subset(M, index(indices, 3), replacements);
+    M = subset(M, index(indices, maxDim), replacements);
     return M;
 };
 const scale = (M, x) => {
     const dim = parseInt(x.size());
+    const maxDim = dim - 1;
     let indices = [],
         replacements = [];
 
@@ -48,7 +50,7 @@ const scale = (M, x) => {
         replacements.push(subset(M, index(i, i)) * subset(x, index(i)));
     }
 
-    M = subset(M, index(indices, 3), replacements);
+    M = subset(M, index(indices, maxDim), replacements);
     return M;
 };
 const rotate = (M, x, a) => {

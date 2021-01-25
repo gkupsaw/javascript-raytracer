@@ -21,10 +21,10 @@ const transformationTypes = {
 
 class RGBA {
     constructor(r, g, b, a) {
-        this.r = r;
-        this.g = g;
-        this.b = b;
-        this.a = a;
+        this.r = parseInt(r);
+        this.g = parseInt(g);
+        this.b = parseInt(b);
+        this.a = parseInt(a);
     }
 }
 
@@ -85,13 +85,17 @@ class Primitive {
 }
 
 class Material {
-    constructor({ diffuse, ambient, specular, blend, shininess } = {}) {
-        this.diffuse = diffuse;
-        this.ambient = ambient;
-        this.specular = specular;
+    constructor({ cDiffuse, cAmbient, cSpecular, blend, shininess } = {}) {
+        this.cDiffuse = cDiffuse;
+        this.cAmbient = cAmbient;
+        this.cSpecular = cSpecular;
         this.blend = blend;
         this.shininess = shininess;
     }
+
+    setAmbient = (cAmbient) => (this.cAmbient = cAmbient);
+    setDiffuse = (cDiffuse) => (this.cDiffuse = cDiffuse);
+    setSpecular = (cSpecular) => (this.cSpecular = cSpecular);
 }
 
 class Transformation {

@@ -26,7 +26,6 @@ const normalize = (vec) => {
 };
 
 const translate = (M, x) => {
-    console.error('No translate!');
     const dim = parseInt(x.size());
     let indices = [],
         replacements = [];
@@ -36,14 +35,20 @@ const translate = (M, x) => {
         replacements.push(subset(M, index(i, 3)) - subset(x, index(i)));
     }
 
-    console.log(indices);
-    console.log(replacements);
-
     M = subset(M, index(indices, 3), replacements);
     return M;
 };
 const scale = (M, x) => {
-    console.error('No scale!');
+    const dim = parseInt(x.size());
+    let indices = [],
+        replacements = [];
+
+    for (let i = 0; i < dim; i++) {
+        indices.push(i);
+        replacements.push(subset(M, index(i, i)) * subset(x, index(i)));
+    }
+
+    M = subset(M, index(indices, 3), replacements);
     return M;
 };
 const rotate = (M, x, a) => {
@@ -101,13 +106,12 @@ const vec4 = (x, y, z, w) => {
 
 const id4 = () => identity(4);
 
-const M = id4();
-const x = vec3(1, 2, 3);
-console.log(translate(M, x));
-
 const tests = () => {
+    const M = id4();
+    const x = vec3(1, 2, 3);
+
     const translateSuccess =
-        translate(id4(), vec3(1, 2, 3)) ===
+        translate(M, x) ===
         matrix([
             [1, 0, 0, -1],
             [0, 1, 0, -2],

@@ -180,7 +180,6 @@ class RayScene {
         const EPSILON = 1e-2;
         const shape = oscIntersection.shape;
         const mat = shape.primitive.material;
-        console.log(shape);
         const ambientIntensity = mat_mul(mat.cAmbient, this.global.ka);
         let diffuseIntensity = mat_mul(mat.cDiffuse, this.global.kd);
         const specularIntensity = mat_mul(mat.cSpecular, this.global.ks);
@@ -190,7 +189,6 @@ class RayScene {
 
         let lightSummation = vec4(0);
         const objectNormalToWorld = mat_transpose(
-            //fixthis
             mat3(shape.inverseTransformation)
         );
         const N = normalize(

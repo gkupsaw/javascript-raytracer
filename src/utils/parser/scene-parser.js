@@ -13,6 +13,7 @@ import {
     scale,
     rotate,
     id4,
+    matrix,
 } from '../lib';
 import {
     defaultData,
@@ -176,6 +177,15 @@ const parseObject = (object, transformation = id4()) => {
                 inverseTransformation,
             });
 
+            // TODO: REMOVE
+            objectData.inverseTransformation = matrix([
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+                [0, 0, 0, 1],
+            ]);
+            console.log(objectData.inverseTransformation);
+
             if (!instantiatedObjects[name]) {
                 instantiatedObjects[name] = objectData;
             }
@@ -187,7 +197,6 @@ const parseObject = (object, transformation = id4()) => {
                 switch (attr.tagName) {
                     case TRANSBLOCK:
                         for (const treeChild of attr.children) {
-                            console.log(transformation);
                             switch (treeChild.tagName) {
                                 case tagnames.transblock.TRANSLATE:
                                     transformation = translate(

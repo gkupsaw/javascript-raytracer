@@ -5,15 +5,11 @@ import {
     inv,
     transpose as mat_transpose,
     multiply,
-    sin,
-    cos,
-    tan,
-    atan,
     matrix,
-    identity,
     index,
     subset,
 } from 'mathjs';
+const { sin, cos, tan, atan } = Math;
 
 const normalize = (vec) => {
     let sqrSum = 0;
@@ -26,12 +22,12 @@ const normalize = (vec) => {
 };
 
 const translate = (M, x) => {
-    const dim = parseInt(x.size());
+    const dim = parseInt(M.size()[1]);
     const maxDim = dim - 1;
     let indices = [],
         replacements = [];
 
-    for (let i = 0; i < dim; i++) {
+    for (let i = 0; i < maxDim; i++) {
         indices.push(i);
         replacements.push(subset(M, index(i, maxDim)) - subset(x, index(i)));
     }
@@ -40,9 +36,10 @@ const translate = (M, x) => {
     return M;
 };
 const scale = (M, x) => {
-    const dim = parseInt(x.size());
+    const dim = parseInt(M.size()[1]);
+    const maxDim = dim - 1;
 
-    for (let i = 0; i < dim; i++) {
+    for (let i = 0; i < maxDim; i++) {
         M = subset(
             M,
             index(i, i),
@@ -111,7 +108,13 @@ const vec4 = (x, y, z, w) => {
     return vec;
 };
 
-const id4 = () => identity(4);
+const id4 = () =>
+    matrix([
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1],
+    ]);
 
 const tests = () => {
     const M = id4();

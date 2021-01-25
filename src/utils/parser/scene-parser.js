@@ -28,6 +28,7 @@ let instantiatedObjects = {}; // TODO: make this non-global
 
 const parseFloatAttr = (xmlEl, attr) => parseFloat(xmlEl.getAttribute(attr));
 
+const getValue = (xmlEl) => parseFloatAttr(xmlEl, 'v');
 const getVec3 = (xmlEl) =>
     vec3(
         parseFloatAttr(xmlEl, 'x'),
@@ -118,7 +119,7 @@ const parseLight = (light) => {
         switch (attr.tagName) {
             case tagnames.light.ID:
                 propName = 'id';
-                propVal = attr.getAttribute('v');
+                propVal = getValue(attr);
                 break;
             case tagnames.light.COLOR:
                 propName = 'color';
@@ -149,22 +150,34 @@ const parseObject = (object, transformation = id4()) => {
         case 'primitive':
             let material = new Material({ ...defaultData.material });
 
+            const materialColorTagnames = [
+                tagnames.object.DIFFUSE,
+                tagnames.object.SPECULAR,
+                tagnames.object.AMBIENT,
+                tagnames.object.REFLECTIVE,
+            ];
+
             for (const attr of object.children) {
-                switch (attr.tagName) {
-                    case tagnames.object.DIFFUSE:
-                        material.setDiffuse(getRGBA(attr));
-                        break;
-                    case tagnames.object.SPECULAR:
-                        material.setSpecular(getRGBA(attr));
-                        break;
-                    case tagnames.object.AMBIENT:
-                        material.setAmbient(getRGBA(attr));
-                        break;
-                    default:
-                        console.error(
-                            `Unknown primitive object data tag: ${attr.tagName}`
-                        );
-                        break;
+                const materialColorType = materialColorTagnames.find(
+                    (t) => t.name === attr.tagName
+                );
+                if (materialColorType) {
+                    material.setProperty(
+                        materialColorType.propName,
+                        getRGBA(attr)
+                    );
+                } else {
+                    switch (attr.tagName) {
+                        case tagnames.object.SHININESS.name:
+                        case tagnames.object.BLEND.name:
+                            material.setProperty(attr.tagName, getValue(attr));
+                            break;
+                        default:
+                            console.error(
+                                `Unknown primitive object data tag: ${attr.tagName}`
+                            );
+                            break;
+                    }
                 }
             }
 

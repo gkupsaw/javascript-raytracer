@@ -11,9 +11,8 @@ import {
     mat_inv,
     mat_transpose,
     mat_mul,
+    dotMultiply,
     mat_add,
-    chain,
-    id4,
 } from '../lib';
 import {
     computeAttenuation,
@@ -56,6 +55,7 @@ class RayScene {
 
         let y;
         for (y = 0; y < yMax; y++) {
+            // if (y !== 800) continue;
             console.log(`rendering row (${y + 1}/${yMax})`);
             this.renderRow(canvas, y, filmToWorld, pEye);
             if (this.halt) {
@@ -183,7 +183,7 @@ class RayScene {
         const V = normalize(wscRayDir.negate()); // normalized wsc line of sight
         const shininess = mat.shininess;
 
-        let lightSummation = vec4(0);
+        let lightSummation = vec4(0, 0, 0, 0);
         const objectNormalToWorld = mat_transpose(
             mat3(shape.inverseTransformation)
         );
@@ -202,6 +202,7 @@ class RayScene {
             diffuseIntensity = blend * uvColor + (1 - blend) * diffuseIntensity;
         }
 
+        console.log('starting');
         for (const light of this.lights) {
             let L = vec4(0);
 
@@ -290,11 +291,11 @@ class RayScene {
             lightSummation = mat_add(
                 lightSummation,
                 mat_mul(
-                    attenuation,
-                    mat_mul(
+                    dotMultiply(
                         light.color,
                         mat_add(diffuseComponent, specularComponent)
-                    )
+                    ),
+                    attenuation
                 )
             );
         }

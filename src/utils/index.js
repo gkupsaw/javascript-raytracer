@@ -1,7 +1,7 @@
 import { parse } from './parser/scene-parser';
 import { RayScene } from './raytracing/RayScene';
 import Camera from './raytracing/Camera';
-import { matrix, vec4 } from './lib';
+import { Canvas } from './lib/datatypes';
 
 const scene = `<scenefile>
 <globaldata>
@@ -28,72 +28,11 @@ const scene = `<scenefile>
 
 </scenefile>`;
 
-const CAMERA = new Camera();
-
-class CanvasData {
-    dataSize = 4;
-
-    constructor(size) {
-        this.data = new Uint8ClampedArray(size * this.dataSize);
-    }
-
-    set = (val, index) => {
-        if (isNaN(val)) {
-            const vec = val;
-            if (vec.forEach) {
-                vec.forEach((v, i) => {
-                    const indivIndex = i.length ? i[0] : i;
-                    this.data[this.dataSize * index + indivIndex] = v;
-                });
-            } else {
-                console.error('Bad arg for setting CanvasData');
-            }
-        } else {
-            this.data[index] = val;
-        }
-    };
-
-    get = () => this.data;
-}
-// const canvasDatumSize = 4;
-// const CanvasData = new Proxy(Uint8Array, {
-//     set: function (self, index, val) {
-//         if (isNaN(val)) {
-//             const vec = val;
-//             if (vec.forEach) {
-//                 vec.forEach((v, i) => {
-//                     console.log(v);
-//                     Reflect.set(self, canvasDatumSize * index + i, v);
-//                 });
-//                 console.log(Reflect.get(self, canvasDatumSize * index));
-//                 return val;
-//             } else {
-//                 console.error('Bad value passed to CanvasData');
-//                 return Reflect.set(...arguments);
-//             }
-//         } else {
-//             return Reflect.set(...arguments);
-//         }
-//     },
-// });
-
-class Canvas {
-    constructor(height, width) {
-        this.height_val = height;
-        this.width_val = width;
-        this.pixel_data = new CanvasData(height * width);
-    }
-
-    height = () => this.height_val;
-    width = () => this.width_val;
-    data = () => this.pixel_data;
-    update = () => {};
-}
-
-const CANVAS = new Canvas(1169, 871);
-
 const runRaytracer = () => {
+    const CAMERA = new Camera();
+    const CANVAS = new Canvas(1169, 871);
     const { global, camera, light, object } = parse(scene);
+    console.log(object);
 
     CAMERA.orientLook(camera.pos, camera.look, camera.up);
 
@@ -107,9 +46,6 @@ const runRaytracer = () => {
     canvas.height = CANVAS.height();
     const context = canvas.getContext('2d');
     const data = new ImageData(pixelData, CANVAS.width(), CANVAS.height());
-
-    console.log(pixelData.length);
-    console.log(pixelData.filter((v) => v && v !== 255));
 
     context.putImageData(data, 0, 0);
 

@@ -13,10 +13,10 @@ const defaultData = {
     object: [],
 
     material: {
-        cDiffuse: vec4(0.5, 0.5, 0.5, 1), // new RGBA
-        cAmbient: vec4(0.5, 0.5, 0.5, 1), // new RGBA
-        cSpecular: vec4(0.5, 0.5, 0.5, 1), // new RGBA
-        cReflective: vec4(1, 1, 1, 1), // new RGBA
+        cDiffuse: vec4(0, 0, 0, 1), // new RGBA
+        cAmbient: vec4(0, 0, 0, 1), // new RGBA
+        cSpecular: vec4(0, 0, 0, 1), // new RGBA
+        cReflective: vec4(0, 0, 0, 1), // new RGBA
         shininess: 0.5,
     },
 };
@@ -43,9 +43,12 @@ const tagnames = {
         UP: 'up',
     },
     object: {
-        DIFFUSE: 'diffuse',
-        SPECULAR: 'specular',
-        AMBIENT: 'ambient',
+        DIFFUSE: { name: 'diffuse', propName: 'cDiffuse' },
+        SPECULAR: { name: 'specular', propName: 'cSpecular' },
+        AMBIENT: { name: 'ambient', propName: 'cAmbient' },
+        REFLECTIVE: { name: 'reflective', propName: 'cReflective' },
+        SHININESS: { name: 'shininess', propName: 'shininess' },
+        BLEND: { name: 'blend', propName: 'blend' },
     },
     transblock: {
         TRANSLATE: 'translate',

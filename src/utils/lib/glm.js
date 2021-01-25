@@ -64,10 +64,13 @@ const mat_inv = (M) => {
 };
 const radians = (deg) => (deg * Math.PI) / 180;
 const degrees = (rad) => (180 * rad) / Math.PI;
-const clamp = (M, min = 0, max = 1) => {
-    return M.map((value) => {
-        return Math.max(Math.min(value, max), min);
-    });
+const clamp = (v, min = 0, max = 1) => {
+    if (isNaN(v)) {
+        return v.map((value) => {
+            return Math.max(Math.min(value, max), min);
+        });
+    }
+    return Math.max(Math.min(v, max), min);
 };
 
 const mat3 = (row1, row2, row3) => {

@@ -214,7 +214,6 @@ class RayScene {
                     if (!settings.usePointLights) {
                         continue;
                     }
-                    console.log(light);
 
                     // from point TO light
                     L = normalize(

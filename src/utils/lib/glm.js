@@ -10,6 +10,9 @@ import {
     tan,
     atan,
     matrix,
+    identity,
+    index,
+    subset,
 } from 'mathjs';
 
 const normalize = (vec) => {
@@ -24,6 +27,19 @@ const normalize = (vec) => {
 
 const translate = (M, x) => {
     console.error('No translate!');
+    const dim = parseInt(x.size());
+    let indices = [],
+        replacements = [];
+
+    for (let i = 0; i < dim; i++) {
+        indices.push(i);
+        replacements.push(subset(M, index(i, 3)) - subset(x, index(i)));
+    }
+
+    console.log(indices);
+    console.log(replacements);
+
+    M = subset(M, index(indices, 3), replacements);
     return M;
 };
 const scale = (M, x) => {
@@ -84,6 +100,21 @@ const vec4 = (x, y, z, w) => {
 };
 
 const id4 = () => identity(4);
+
+const M = id4();
+const x = vec3(1, 2, 3);
+console.log(translate(M, x));
+
+const tests = () => {
+    const translateSuccess =
+        translate(id4(), vec3(1, 2, 3)) ===
+        matrix([
+            [1, 0, 0, -1],
+            [0, 1, 0, -2],
+            [0, 0, 1, -3],
+            [0, 0, 0, 1],
+        ]);
+};
 
 export {
     clamp,

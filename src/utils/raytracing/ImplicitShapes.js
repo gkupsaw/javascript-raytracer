@@ -10,7 +10,7 @@ import {
 
 const EPSILON_RAY = 1e-5;
 
-const implicitTrunk = (ray, a, b, c, top, bottom) => {
+const implicitTrunk = (ray, a, b, c, top = 0.5, bottom = -0.5) => {
     let minT = Infinity;
     const discriminant = Math.pow(b, 2) - 4 * a * c;
     const p = ray.eye;

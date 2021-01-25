@@ -29,7 +29,7 @@ Matrix.prototype.a = function () {
 };
 
 Matrix.prototype.xyz = function () {
-    return vec3(this.x, this.y, this.z);
+    return vec3(this.x(), this.y(), this.z());
 };
 
 Matrix.prototype.negate = function () {

@@ -51,18 +51,12 @@ class RayScene {
         const filmToWorld = mat_inv(
             mat_mul(camera.getScaleMatrix(), camera.getViewMatrix())
         );
-        // console.log(camera.getScaleMatrix());
-        // console.log(camera.getViewMatrix());
-        // console.log(filmToWorld);
         const pEye = mat_mul(filmToWorld, vec4(0, 0, 0, 1));
         const yMax = height;
 
-        this.renderRow(canvas, 680, filmToWorld, pEye);
-        return;
-
         let y;
         for (y = 0; y < yMax; y++) {
-            console.log('rendering row');
+            console.log(`rendering row (${y + 1}/${yMax})`);
             this.renderRow(canvas, y, filmToWorld, pEye);
             if (this.halt) {
                 break;
@@ -100,10 +94,10 @@ class RayScene {
             const pixelIndex = xMax * y + x;
 
             // no intersection
+            let pixelColor;
             if (pixelIntersection.t === Infinity) {
-                data[pixelIndex] = bgColor;
+                pixelColor = bgColor;
             } else {
-                console.log('intersect!');
                 const wscIntersectionPoint = mat_add(
                     ray.eye,
                     mat_mul(ray.dir, pixelIntersection.t)
@@ -115,13 +109,15 @@ class RayScene {
                     pixelIntersection,
                     wscIntersectionPoint
                 );
-                // pixelIntensity = mat_mul(pixelIntensity, 255);
-                // data[pixelIndex] = vec4(
-                //     // new RGBA
-                //     pixelIntensity.xyz(),
-                //     255
-                // );
+                pixelIntensity = mat_mul(pixelIntensity, 255);
+                pixelColor = vec4(
+                    // new RGBA
+                    pixelIntensity.xyz(),
+                    255
+                );
             }
+
+            data.set(pixelColor, pixelIndex);
         }
 
         processEvents();
@@ -335,13 +331,6 @@ class RayScene {
             ambientIntensity,
             mat_add(lightSummation, recursiveComponent)
         );
-
-        console.log({
-            final,
-            ambientIntensity,
-            lightSummation,
-            recursiveComponent,
-        });
 
         final = clamp(final, 0, 1);
 

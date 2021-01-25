@@ -1,6 +1,7 @@
 import { parse } from './parser/scene-parser';
 import { RayScene } from './raytracing/RayScene';
 import Camera from './raytracing/Camera';
+import { matrix, vec4 } from './lib';
 
 const scene = `<scenefile>
 <globaldata>
@@ -29,11 +30,52 @@ const scene = `<scenefile>
 
 const CAMERA = new Camera();
 
-const CanvasData = Uint8Array;
-// const pixelDataSize = 4;
-// CanvasData.prototype.insert = function (vec, index) {
-//     vec.forEach((val, i) => (this[index * pixelDataSize + i] = val));
-// };
+class CanvasData {
+    dataSize = 4;
+
+    constructor(size) {
+        this.data = new Uint8ClampedArray(size * this.dataSize);
+    }
+
+    set = (val, index) => {
+        if (isNaN(val)) {
+            const vec = val;
+            if (vec.forEach) {
+                vec.forEach((v, i) => {
+                    const indivIndex = i.length ? i[0] : i;
+                    this.data[this.dataSize * index + indivIndex] = v;
+                });
+            } else {
+                console.error('Bad arg for setting CanvasData');
+            }
+        } else {
+            this.data[index] = val;
+        }
+    };
+
+    get = () => this.data;
+}
+// const canvasDatumSize = 4;
+// const CanvasData = new Proxy(Uint8Array, {
+//     set: function (self, index, val) {
+//         if (isNaN(val)) {
+//             const vec = val;
+//             if (vec.forEach) {
+//                 vec.forEach((v, i) => {
+//                     console.log(v);
+//                     Reflect.set(self, canvasDatumSize * index + i, v);
+//                 });
+//                 console.log(Reflect.get(self, canvasDatumSize * index));
+//                 return val;
+//             } else {
+//                 console.error('Bad value passed to CanvasData');
+//                 return Reflect.set(...arguments);
+//             }
+//         } else {
+//             return Reflect.set(...arguments);
+//         }
+//     },
+// });
 
 class Canvas {
     constructor(height, width) {
@@ -57,7 +99,21 @@ const runRaytracer = () => {
 
     const rayscene = new RayScene(global, light, object);
     rayscene.render(CANVAS, CAMERA);
-    console.log(`Got ${CANVAS.data().filter((v) => v).length} intersections`);
+
+    const pixelData = CANVAS.data().get();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = CANVAS.width();
+    canvas.height = CANVAS.height();
+    const context = canvas.getContext('2d');
+    const data = new ImageData(pixelData, CANVAS.width(), CANVAS.height());
+
+    console.log(pixelData.length);
+    console.log(pixelData.filter((v) => v && v !== 255));
+
+    context.putImageData(data, 0, 0);
+
+    document.getElementById('root').appendChild(canvas);
 };
 
 export { runRaytracer };

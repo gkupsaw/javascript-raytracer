@@ -43,7 +43,8 @@ const getDirection = (xmlEl) =>
         0
     );
 const getRGBA = (xmlEl) =>
-    new RGBA(
+    vec4(
+        // new RGBA
         parseFloatAttr(xmlEl, 'r'),
         parseFloatAttr(xmlEl, 'g'),
         parseFloatAttr(xmlEl, 'b'),
@@ -162,10 +163,11 @@ const parseObject = (object, transformation = id4()) => {
             }
 
             const primitive = new Primitive({ type: name, material });
+            const inverseTransformation = mat_inv(transformation);
             const objectData = new ShapeData({
                 primitive,
                 transformation,
-                inverseTransformation: mat_inv(transformation),
+                inverseTransformation,
             });
 
             if (!instantiatedObjects[name]) {
@@ -179,6 +181,7 @@ const parseObject = (object, transformation = id4()) => {
                 switch (attr.tagName) {
                     case TRANSBLOCK:
                         for (const treeChild of attr.children) {
+                            console.log(transformation);
                             switch (treeChild.tagName) {
                                 case tagnames.transblock.TRANSLATE:
                                     transformation = translate(

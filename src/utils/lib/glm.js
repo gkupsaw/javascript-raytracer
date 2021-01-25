@@ -59,14 +59,20 @@ const rotate = (M, x, a) => {
 };
 const mat_inv = (M) => {
     if (det(M) === 0) {
-        return id4();
+        console.error(M);
+        return M;
+        //id4();
     } else {
         return inv(M);
     }
 };
 const radians = (deg) => (deg * Math.PI) / 180;
 const degrees = (rad) => (180 * rad) / Math.PI;
-const clamp = (val, min, max) => Math.max(Math.min(val, max), min);
+const clamp = (M, min = 0, max = 1) => {
+    return M.map((value) => {
+        return Math.max(Math.min(value, max), min);
+    });
+};
 
 const mat3 = (row1, row2, row3) => {
     if (row1 && row2 === undefined && row3 === undefined) {

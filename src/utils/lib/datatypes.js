@@ -24,7 +24,7 @@ class RGBA {
         this.r = parseInt(r);
         this.g = parseInt(g);
         this.b = parseInt(b);
-        this.a = parseInt(a);
+        this.a = parseInt(a) ?? 1;
     }
 }
 
@@ -85,10 +85,18 @@ class Primitive {
 }
 
 class Material {
-    constructor({ cDiffuse, cAmbient, cSpecular, blend, shininess } = {}) {
+    constructor({
+        cDiffuse,
+        cAmbient,
+        cSpecular,
+        cReflective,
+        blend,
+        shininess,
+    } = {}) {
         this.cDiffuse = cDiffuse;
         this.cAmbient = cAmbient;
         this.cSpecular = cSpecular;
+        this.cReflective = cReflective;
         this.blend = blend;
         this.shininess = shininess;
     }
@@ -96,6 +104,7 @@ class Material {
     setAmbient = (cAmbient) => (this.cAmbient = cAmbient);
     setDiffuse = (cDiffuse) => (this.cDiffuse = cDiffuse);
     setSpecular = (cSpecular) => (this.cSpecular = cSpecular);
+    setReflective = (cReflective) => (this.cReflective = cReflective);
 }
 
 class Transformation {

@@ -29,12 +29,26 @@ const scene = `<scenefile>
 
 const CAMERA = new Camera();
 
-const CANVAS = {
-    data: () => ({}),
-    height: () => 1169,
-    width: () => 871,
-    update: () => {},
-};
+const CanvasData = Uint8Array;
+// const pixelDataSize = 4;
+// CanvasData.prototype.insert = function (vec, index) {
+//     vec.forEach((val, i) => (this[index * pixelDataSize + i] = val));
+// };
+
+class Canvas {
+    constructor(height, width) {
+        this.height_val = height;
+        this.width_val = width;
+        this.pixel_data = new CanvasData(height * width);
+    }
+
+    height = () => this.height_val;
+    width = () => this.width_val;
+    data = () => this.pixel_data;
+    update = () => {};
+}
+
+const CANVAS = new Canvas(1169, 871);
 
 const runRaytracer = () => {
     const { global, camera, light, object } = parse(scene);
@@ -43,6 +57,7 @@ const runRaytracer = () => {
 
     const rayscene = new RayScene(global, light, object);
     rayscene.render(CANVAS, CAMERA);
+    console.log(CANVAS.data().filter((v) => v));
 };
 
 export { runRaytracer };

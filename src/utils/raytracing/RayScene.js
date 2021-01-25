@@ -76,7 +76,7 @@ class RayScene {
         const data = canvas.data();
         const yMax = canvas.height();
         const xMax = canvas.width();
-        const bgColor = new RGBA(0, 0, 0, 255);
+        const bgColor = vec4(0, 0, 0, 255); // new RGBA
 
         let x;
         for (x = 0; x < xMax; x++) {
@@ -97,10 +97,11 @@ class RayScene {
 
             const initialDepth = 0;
             const pixelIntersection = this.computeIntersection(ray);
+            const pixelIndex = xMax * y + x;
 
             // no intersection
             if (pixelIntersection.t === Infinity) {
-                data[xMax * y + x] = bgColor;
+                data[pixelIndex] = bgColor;
             } else {
                 console.log('intersect!');
                 const wscIntersectionPoint = mat_add(
@@ -114,11 +115,10 @@ class RayScene {
                     pixelIntersection,
                     wscIntersectionPoint
                 );
-                pixelIntensity *= 255;
-                data[xMax * y + x] = new RGBA(
-                    pixelIntensity.x(),
-                    pixelIntensity.y(),
-                    pixelIntensity.z(),
+                pixelIntensity = mat_mul(pixelIntensity, 255);
+                data[pixelIndex] = vec4(
+                    // new RGBA
+                    pixelIntensity.xyz(),
                     255
                 );
             }
@@ -133,7 +133,7 @@ class RayScene {
             currIntersection;
 
         for (const shape of this.shapes) {
-            const objectToWorld = id4(); //shape.inverseTransformation;
+            const objectToWorld = shape.inverseTransformation;
             // transform to object space (p + d*t = MO => M^-1 * (p + d*t) = O)
             const rayOS = new Ray(
                 mat_mul(objectToWorld, ray.eye),
@@ -293,10 +293,15 @@ class RayScene {
                 }
             }
 
-            lightSummation = chain(lightSummation).add(
-                chain(attenuation)
-                    .multiply(light.color)
-                    .multiply(mat_add((diffuseComponent, specularComponent)))
+            lightSummation = mat_add(
+                lightSummation,
+                mat_mul(
+                    attenuation,
+                    mat_mul(
+                        light.color,
+                        mat_add((diffuseComponent, specularComponent))
+                    )
+                )
             );
         }
 
@@ -328,9 +333,10 @@ class RayScene {
             }
         }
 
-        let final = chain(ambientIntensity)
-            .add(lightSummation)
-            .add(recursiveComponent);
+        let final = mat_add(
+            ambientIntensity,
+            mat_add(lightSummation, recursiveComponent)
+        );
         final = clamp(final, 0, 1);
 
         return final;

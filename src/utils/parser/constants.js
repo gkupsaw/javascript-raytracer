@@ -1,7 +1,7 @@
 import { RGBA, vec4 } from '../lib';
 
 const defaultData = {
-    global: { cAmbient: 0.5, cDiffuse: 0.5, cSpecular: 0.5 },
+    global: { ka: 1, kd: 1, ks: 1 },
     camera: {
         pos: vec4(5, 5, 5, 1),
         up: vec4(0, 1, 0, 0),
@@ -13,9 +13,10 @@ const defaultData = {
     object: [],
 
     material: {
-        cDiffuse: new RGBA(0.5, 0.5, 0.5, 1),
-        cAmbient: new RGBA(0.5, 0.5, 0.5, 1),
-        cSpecular: new RGBA(0.5, 0.5, 0.5, 1),
+        cDiffuse: vec4(0.5, 0.5, 0.5, 1), // new RGBA
+        cAmbient: vec4(0.5, 0.5, 0.5, 1), // new RGBA
+        cSpecular: vec4(0.5, 0.5, 0.5, 1), // new RGBA
+        cReflective: vec4(1, 1, 1, 1), // new RGBA
     },
 };
 

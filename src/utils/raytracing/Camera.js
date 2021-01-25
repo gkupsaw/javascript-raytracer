@@ -1,18 +1,15 @@
-import { transpose } from 'mathjs';
 import {
     vec4,
     mat4x4,
     normalize,
     cross,
     dot,
-    xyz,
     degrees,
     radians,
     atan,
     tan,
     sin,
     cos,
-    negate,
     mat_mul,
     mat_add,
 } from '../lib';
@@ -23,9 +20,9 @@ class Camera {
         this.up = vec4(0, 1, 0, 0);
         this.w = normalize(vec4(2, 2, 2, 0));
         this.v = normalize(
-            mat_add(this.up, negate(mat_mul(this.w, dot(this.up, this.w))))
+            mat_add(this.up, mat_mul(this.w, dot(this.up, this.w)).negate())
         );
-        this.u = vec4(cross(xyz(this.v), xyz(this.w)), 0);
+        this.u = vec4(cross(this.v.xyz(), this.w.xyz()), 0);
         this.aspectRatio = 1.35065; // 1;
         this.thetaH = 0.785398; //radians(60);
         this.thetaW = 2 * atan(tan(this.thetaH / 2) * this.aspectRatio);
@@ -63,7 +60,7 @@ class Camera {
     }
 
     getLook() {
-        return negate(this.w);
+        return this.w.negate();
     }
 
     getU() {
@@ -92,16 +89,16 @@ class Camera {
 
     orientLook(
         eye = vec4(2, 2, 2, 1),
-        look = negate(normalize(vec4(2, 2, 2, 0))),
+        look = normalize(vec4(2, 2, 2, 0)).negate(),
         up = vec4(0, 1, 0, 0)
     ) {
         this.eye = eye;
         this.up = normalize(up);
-        this.w = normalize(negate(look));
+        this.w = normalize(look.negate());
         this.v = normalize(
-            mat_add(this.up, negate(mat_mul(this.w, dot(this.up, this.w))))
+            mat_add(this.up, mat_mul(this.w, dot(this.up, this.w)).negate())
         );
-        this.u = normalize(vec4(cross(xyz(this.v), xyz(this.w)), 0));
+        this.u = normalize(vec4(cross(this.v.xyz(), this.w.xyz()), 0));
         this.updateViewMatrix();
         this.updateProjectionMatrix();
     }

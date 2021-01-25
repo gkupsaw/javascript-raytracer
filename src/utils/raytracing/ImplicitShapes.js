@@ -6,8 +6,6 @@ import {
     Ray,
     mat_mul,
     mat_add,
-    xyz,
-    negate,
 } from '../lib';
 
 const EPSILON_RAY = 1e-5;
@@ -51,7 +49,8 @@ const implicitPlane = (ray, planeNormal) => {
         return Infinity;
     }
     const t =
-        dot(planeNormal.dir, mat_add(planeNormal.eye, negate(ray.eye))) / denom;
+        dot(planeNormal.dir, mat_add(planeNormal.eye, ray.eye.negate())) /
+        denom;
     return t >= EPSILON_RAY ? t : Infinity;
 };
 
@@ -171,7 +170,7 @@ const implicitCube = (ray) => {
     let t;
     const limit = r + EPSILON_RAY;
     for (const normal of normals) {
-        const normalRadius = vec4(mat_mul(xyz(normal), r), 1);
+        const normalRadius = vec4(mat_mul(normal.xyz(), r), 1);
         const faceRay = new Ray(normalRadius, normal);
         t = implicitPlane(ray, faceRay);
         if (t < intersection.t) {
@@ -209,7 +208,7 @@ const implicitSphere = (ray) => {
     const minT = implicitTrunk(ray, a, b, c);
 
     const intersectionDir = mat_add(p, mat_mul(d, minT));
-    const intersectionNormal = vec4(mat_mul(xyz(intersectionDir), 2), 0);
+    const intersectionNormal = vec4(mat_mul(intersectionDir.xyz(), 2), 0);
     intersection = new IntersectionData(intersectionNormal, minT);
 
     return intersection;

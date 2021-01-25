@@ -1,16 +1,8 @@
-import {
-    lightTypes,
-    clamp,
-    dot,
-    normalize,
-    mat_mul,
-    mat_add,
-    negate,
-} from '../lib';
+import { lightTypes, clamp, dot, normalize, mat_mul, mat_add } from '../lib';
 
 const reflectRay = (v, n) => {
     const dotted = clamp(dot(n, v), 0, 1);
-    return mat_add(mat_mul(n, 2 * dotted), negate(v));
+    return mat_add(mat_mul(n, 2 * dotted), v.negate());
 };
 
 const computeAttenuation = (p_f, p_i, light) => {

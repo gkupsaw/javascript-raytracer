@@ -8,7 +8,6 @@ import {
     add as mat_add,
     matrix,
     index,
-    range,
     subset,
     identity,
     zeros,
@@ -46,6 +45,14 @@ Matrix.prototype.a = function () {
     return subset(this, index(3));
 };
 
+Matrix.prototype.xyz = function () {
+    return vec3(this.x, this.y, this.z);
+};
+
+Matrix.prototype.negate = function () {
+    return mat_mul(this, -1);
+};
+
 const normalize = (vec) => {
     let sqrSum = 0;
 
@@ -80,8 +87,6 @@ const mat_inv = (M) => {
         return inv(M);
     }
 };
-const negate = (M) => mat_mul(M, -1);
-const xyz = (vec) => subset(vec, index(range(0, 3)));
 const radians = (deg) => (deg * Math.PI) / 180;
 const degrees = (rad) => (180 * rad) / Math.PI;
 
@@ -264,8 +269,6 @@ export {
     mat_transpose,
     mat_mul,
     mat_add,
-    xyz,
-    negate,
     translate,
     scale,
     rotate,

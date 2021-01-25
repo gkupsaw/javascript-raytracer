@@ -12,8 +12,6 @@ import {
     mat_transpose,
     mat_mul,
     mat_add,
-    xyz,
-    negate,
     chain,
     id4,
 } from '../lib';
@@ -24,9 +22,6 @@ import {
     reflectRay,
 } from './LightingUtils';
 import * as ImplicitShapes from './ImplicitShapes';
-
-//add light functions
-//math ops on vecs
 
 const MAX_DEPTH = 4;
 
@@ -90,7 +85,7 @@ class RayScene {
             );
             // transform that point to world space
             const worldSpaceLoc = mat_mul(filmToWorld, filmPlaneLoc);
-            const dir = normalize(mat_add(worldSpaceLoc, negate(pEye)));
+            const dir = normalize(mat_add(worldSpaceLoc, pEye.negate()));
             const ray = new Ray(pEye, dir);
             if (y === 0) {
             } //console.log({ pEye, dir, worldSpaceLoc });
@@ -189,7 +184,7 @@ class RayScene {
         let diffuseIntensity = mat_mul(this.global.kd, mat.cDiffuse);
         const specularIntensity = mat_mul(this.global.ks, mat.cSpecular);
         const recursiveIntensity = mat_mul(this.global.ks, mat.cReflective);
-        const V = normalize(negate(wscRayDir)); // normalized wsc line of sight
+        const V = normalize(wscRayDir.negate()); // normalized wsc line of sight
         const shininess = mat.shininess;
 
         let lightSummation = vec4(0);
@@ -198,7 +193,7 @@ class RayScene {
             mat3(shape.inverseTransformation)
         );
         const N = normalize(
-            vec4(mat_mul(objectNormalToWorld, xyz(oscIntersection.normal)), 0)
+            vec4(mat_mul(objectNormalToWorld, oscIntersection.normal.xyz()), 0)
         );
 
         // most of texture mapping is in this block
@@ -223,7 +218,7 @@ class RayScene {
 
                     // from point TO light
                     L = normalize(
-                        mat_add(light.pos, negate(wscIntersectionPoint))
+                        mat_add(light.pos, wscIntersectionPoint.negate())
                     );
                     break;
                 case lightTypes.DIRECTIONAL:
@@ -231,7 +226,7 @@ class RayScene {
                         continue;
                     }
 
-                    L = normalize(negate(light.dir));
+                    L = normalize(light.dir.negate());
                     break;
                 default:
                     break;
@@ -258,7 +253,7 @@ class RayScene {
                     // and a plane at the light source pointing towards the point
                     tToLight = ImplicitShapes.implicitPlane(
                         rayToLight,
-                        new Ray(light.pos, negate(L))
+                        new Ray(light.pos, L.negate())
                     );
                 }
 
@@ -307,7 +302,7 @@ class RayScene {
         // most of reflection is in this block
         let recursiveComponent = vec4(0);
         if (settings.useReflection && depth < MAX_DEPTH) {
-            const R = normalize(reflectRay(negate(wscRayDir), N));
+            const R = normalize(reflectRay(wscRayDir.negate(), N));
             const offsetReflectionSource = mat_add(
                 wscIntersectionPoint,
                 mat_mul(R, EPSILON)

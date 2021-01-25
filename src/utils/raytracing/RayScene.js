@@ -29,7 +29,7 @@ const processEvents = () => {};
 
 const computeUVColor = () => {};
 
-const settings = {};
+const settings = { usePointLights: true };
 
 class RayScene {
     constructor(global, lights, shapes) {
@@ -139,7 +139,6 @@ class RayScene {
                 mat_mul(objectToWorld, ray.eye),
                 mat_mul(objectToWorld, ray.dir)
             );
-            console.log(objectToWorld.size());
 
             switch (shape.primitive.type) {
                 case primitiveTypes.CONE:
@@ -215,6 +214,7 @@ class RayScene {
                     if (!settings.usePointLights) {
                         continue;
                     }
+                    console.log(light);
 
                     // from point TO light
                     L = normalize(
@@ -336,6 +336,14 @@ class RayScene {
             ambientIntensity,
             mat_add(lightSummation, recursiveComponent)
         );
+
+        console.log({
+            final,
+            ambientIntensity,
+            lightSummation,
+            recursiveComponent,
+        });
+
         final = clamp(final, 0, 1);
 
         return final;

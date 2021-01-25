@@ -125,7 +125,7 @@ const parseLight = (light) => {
                 propVal = getRGBA(attr);
                 break;
             case tagnames.light.POS:
-                propName = 'position';
+                propName = 'pos';
                 propVal = getPosition(attr);
                 break;
             default:

@@ -55,7 +55,7 @@ const implicitPlane = (ray, planeNormal) => {
 };
 
 const implicitCone = (ray) => {
-    let intersection;
+    let intersection = new IntersectionData();
     const p = ray.eye;
     const d = ray.dir;
 
@@ -103,7 +103,7 @@ const implicitCone = (ray) => {
 };
 
 const implicitCylinder = (ray) => {
-    let intersection;
+    let intersection = new IntersectionData();
     const p = ray.eye;
     const d = ray.dir;
 
@@ -153,7 +153,7 @@ const implicitCylinder = (ray) => {
 };
 
 const implicitCube = (ray) => {
-    let intersection;
+    let intersection = new IntersectionData();
     const r = 0.5;
     const p = ray.eye;
     const d = ray.dir;
@@ -192,7 +192,7 @@ const implicitCube = (ray) => {
 };
 
 const implicitSphere = (ray) => {
-    let intersection;
+    let intersection = new IntersectionData();
     const r = 0.5;
     const p = ray.eye;
     const d = ray.dir;

@@ -183,7 +183,7 @@ class RayScene {
         const V = normalize(wscRayDir.negate()); // normalized wsc line of sight
         const shininess = mat.shininess;
 
-        let lightSummation = vec4(0, 0, 0, 0);
+        let lightSummation = vec4(0);
         const objectNormalToWorld = mat_transpose(
             mat3(shape.inverseTransformation)
         );
@@ -202,7 +202,6 @@ class RayScene {
             diffuseIntensity = blend * uvColor + (1 - blend) * diffuseIntensity;
         }
 
-        console.log('starting');
         for (const light of this.lights) {
             let L = vec4(0);
 

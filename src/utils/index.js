@@ -28,11 +28,18 @@ const scene = `<scenefile>
 
 </scenefile>`;
 
+const canvasDims = {
+    height: 1169,
+    width: 871,
+
+    height: 400,
+    width: 400
+}
+
 const runRaytracer = () => {
     const CAMERA = new Camera();
-    const CANVAS = new Canvas(1169, 871);
+    const CANVAS = new Canvas(canvasDims.height, canvasDims.width);
     const { global, camera, light, object } = parse(scene);
-    console.log(object);
 
     CAMERA.orientLook(camera.pos, camera.look, camera.up);
 

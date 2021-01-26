@@ -112,13 +112,8 @@ const canvasDims = {
 
 const runRaytracer = () => {
     const CAMERA = new Camera();
-<<<<<<< HEAD
     const CANVAS = new Canvas(canvasDims.height, canvasDims.width);
-    const { global, camera, light, object } = parse(scene);
-=======
-    const CANVAS = new Canvas(300, 300);
     const { global, camera, light, object } = parse(scenes.intscttest);
->>>>>>> 595ca517851779d9e53cca3fc8ab008ecf594692
 
     CAMERA.orientLook(camera.pos, camera.look, camera.up);
 

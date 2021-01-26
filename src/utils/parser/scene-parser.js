@@ -29,6 +29,12 @@ let instantiatedObjects = {}; // TODO: make this non-global
 const parseFloatAttr = (xmlEl, attr) => parseFloat(xmlEl.getAttribute(attr));
 
 const getValue = (xmlEl) => parseFloatAttr(xmlEl, 'v');
+const getValueTriple = (xmlEl) =>
+    vec3(
+        parseFloatAttr(xmlEl, 'v1'),
+        parseFloatAttr(xmlEl, 'v2'),
+        parseFloatAttr(xmlEl, 'v3')
+    );
 const getVec3 = (xmlEl) =>
     vec3(
         parseFloatAttr(xmlEl, 'x'),
@@ -99,6 +105,12 @@ const parseCamera = (camera) => {
             case tagnames.camera.UP:
                 cameraData['up'] = getDirection(attr);
                 break;
+            case tagnames.camera.HEIGHTANGLE:
+                cameraData['heightangle'] = getValue(attr);
+                break;
+            case tagnames.camera.FOCUS:
+                cameraData['focus'] = getVec3(attr);
+                break;
             default:
                 console.error(`Unknown camera data tag: ${attr.tagName}`);
                 break;
@@ -129,6 +141,9 @@ const parseLight = (light) => {
                 propName = 'pos';
                 propVal = getPosition(attr);
                 break;
+            case tagnames.light.FUNC:
+                propName = 'func';
+                propVal = getValueTriple(attr);
             default:
                 console.error(`Unknown light data tag: ${attr.tagName}`);
                 break;

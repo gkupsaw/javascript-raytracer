@@ -37,10 +37,13 @@ const tagnames = {
         ID: 'id',
         COLOR: 'color',
         POS: 'position',
+        FUNC: 'function'
     },
     camera: {
         POS: 'pos',
         UP: 'up',
+        HEIGHTANGLE: 'thetaH',
+        FOCUS: 'focus'
     },
     object: {
         DIFFUSE: { name: 'diffuse', propName: 'cDiffuse' },
